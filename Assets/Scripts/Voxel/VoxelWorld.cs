@@ -20,10 +20,20 @@ namespace LastLight.Voxel
         readonly Dictionary<Vector3Int, Chunk> _chunks = new();
         readonly Dictionary<Vector3Int, ChunkView> _views = new();
 
+        // Yeniden mesh'lenmesi gereken chunk'lar. Her karede tum chunk'lari
+        // taramak kucuk dunyada ucuz ama dunya buyudukce bosa maliyet.
+        readonly HashSet<Vector3Int> _dirty = new();
+
         void Start()
         {
             GenerateFlatWorld();
+            foreach (var coord in _chunks.Keys) _dirty.Add(coord);
             RebuildDirtyChunks();
+        }
+
+        void Update()
+        {
+            if (_dirty.Count > 0) RebuildDirtyChunks();
         }
 
         // ---------- Dunya koordinatiyla erisim ----------
@@ -55,6 +65,7 @@ namespace LastLight.Voxel
             int lz = wz - coord.z * Chunk.Size;
 
             chunk.Set(lx, ly, lz, id);
+            _dirty.Add(coord);
 
             if (lx == 0) MarkDirty(coord + Vector3Int.left);
             if (lx == Chunk.Size - 1) MarkDirty(coord + Vector3Int.right);
@@ -71,7 +82,9 @@ namespace LastLight.Voxel
 
         void MarkDirty(Vector3Int coord)
         {
-            if (_chunks.TryGetValue(coord, out var c)) c.Dirty = true;
+            if (!_chunks.TryGetValue(coord, out var c)) return;
+            c.Dirty = true;
+            _dirty.Add(coord);
         }
 
         // ---------- Uretim ve mesh ----------
@@ -113,12 +126,13 @@ namespace LastLight.Voxel
         /// <summary>Kirli chunk'lari yeniden mesh'ler. Temiz olanlara dokunmaz.</summary>
         public void RebuildDirtyChunks()
         {
-            foreach (var kv in _chunks)
+            foreach (var coord in _dirty)
             {
-                if (!kv.Value.Dirty) continue;
-                RebuildChunk(kv.Key, kv.Value);
-                kv.Value.Dirty = false;
+                if (!_chunks.TryGetValue(coord, out var chunk)) continue;
+                RebuildChunk(coord, chunk);
+                chunk.Dirty = false;
             }
+            _dirty.Clear();
         }
 
         void RebuildChunk(Vector3Int coord, Chunk chunk)

@@ -18,21 +18,39 @@ namespace ProjectBootstrap
         const string ScenePath = "Assets/Scenes/SampleScene.unity";
         const string MaterialDir = "Assets/Materials";
 
+        /// <summary>Batchmode girisi - isi bitince Editor'u kapatir.</summary>
         public static void Build()
+        {
+            BuildScene();
+            EditorApplication.Exit(0);
+        }
+
+        /// <summary>
+        /// Editor acikken menuden calistirmak icin. Batchmode ikinci bir Unity
+        /// ornegi acamadigi icin (ayni proje iki surecte acilamaz) sahne
+        /// degisiklikleri Editor acikken buradan yapiliyor.
+        /// </summary>
+        [MenuItem("LastLight/Sahneyi Yeniden Kur")]
+        public static void BuildFromMenu()
+        {
+            BuildScene();
+            Debug.Log("[SceneBootstrap] Sahne menuden yeniden kuruldu.");
+        }
+
+        static void BuildScene()
         {
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
             Material[] mats = CreateBlockMaterials();
             SetupLighting();
             GameObject world = CreateWorld(mats);
-            CreatePlayer();
+            CreatePlayer(world.GetComponent<VoxelWorld>());
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
 
             Debug.Log($"[SceneBootstrap] Sahne kuruldu: {world.name} + Player, {mats.Length} malzeme.");
-            EditorApplication.Exit(0);
         }
 
         // ---------- Malzemeler ----------
@@ -105,7 +123,7 @@ namespace ProjectBootstrap
 
         // ---------- Oyuncu ----------
 
-        static void CreatePlayer()
+        static void CreatePlayer(VoxelWorld world)
         {
             var existing = GameObject.Find("Player");
             if (existing != null) Object.DestroyImmediate(existing);
@@ -145,6 +163,14 @@ namespace ProjectBootstrap
             var so = new SerializedObject(controller);
             so.FindProperty("cameraPivot").objectReferenceValue = pivot.transform;
             so.ApplyModifiedPropertiesWithoutUndo();
+
+            // Blok kirma/koyma. Referanslar burada baglaniyor; runtime'da
+            // FindAnyObjectByType ile aramak sahne buyudukce pahali.
+            var interaction = player.AddComponent<BlockInteraction>();
+            var soi = new SerializedObject(interaction);
+            soi.FindProperty("cameraPivot").objectReferenceValue = pivot.transform;
+            soi.FindProperty("world").objectReferenceValue = world;
+            soi.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // ---------- Isik ----------
