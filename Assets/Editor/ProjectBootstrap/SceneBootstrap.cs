@@ -1,7 +1,9 @@
 using System.IO;
 using LastLight.Items;
 using LastLight.Player;
+using LastLight.Skills;
 using LastLight.Voxel;
+using LastLight.World;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -177,6 +179,8 @@ namespace ProjectBootstrap
             // referans olarak veriliyor.
             var inv = player.AddComponent<PlayerInventory>();
 
+            player.AddComponent<PlayerSkills>();
+
             var crafting = player.AddComponent<CraftingUI>();
             var soc = new SerializedObject(crafting);
             soc.FindProperty("inventory").objectReferenceValue = inv;
@@ -210,6 +214,18 @@ namespace ProjectBootstrap
             light.color = new Color(1f, 0.95f, 0.85f);
             light.intensity = 1.1f;
             light.shadows = LightShadows.Soft;
+
+            // Gunduz-gece dongusu gunesi kendisi yonetiyor.
+            var cycleGo = GameObject.Find("WorldCycle");
+            if (cycleGo != null) Object.DestroyImmediate(cycleGo);
+
+            cycleGo = new GameObject("WorldCycle");
+            var cycle = cycleGo.AddComponent<DayNightCycle>();
+            var so = new SerializedObject(cycle);
+            so.FindProperty("sun").objectReferenceValue = light;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            cycleGo.AddComponent<WorldHUD>();
         }
     }
 }

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using LastLight.Skills;
+
 namespace LastLight.Items
 {
     public readonly struct Ingredient
@@ -73,7 +75,14 @@ namespace LastLight.Items
             foreach (var ing in r.Inputs)
                 inv.Consume(ing.Id, ing.Count);
 
-            int leftover = inv.Add(r.Output, r.OutputCount);
+            // "Usta Marangoz" yalnizca odun tabanli tarifleri etkiliyor:
+            // her tarife bonus vermek betonu da ucuzlatir ve dallar arasi
+            // secim anlamsizlasir.
+            int bonus = 0;
+            if (r.Output == ItemId.Plank || r.Output == ItemId.Stick)
+                bonus = PlayerSkills.Instance?.State.ExtraCraftOutput ?? 0;
+
+            int leftover = inv.Add(r.Output, r.OutputCount + bonus);
             return leftover == 0;
         }
     }

@@ -1,3 +1,4 @@
+using LastLight.Skills;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -24,6 +25,14 @@ namespace LastLight.Items
 
         void Update()
         {
+            // "Yuk Tasiyici" acildiginda kapasite buyur.
+            var skills = PlayerSkills.Instance;
+            if (skills != null)
+            {
+                int target = Inventory.BaseSlots + skills.State.ExtraInventorySlots;
+                if (Inventory.SlotCount < target) Inventory.Resize(target);
+            }
+
             var kb = Keyboard.current;
             if (kb == null) return;
 

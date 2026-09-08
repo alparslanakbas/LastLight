@@ -1,5 +1,7 @@
 using LastLight.Items;
+using LastLight.Skills;
 using LastLight.Voxel;
+using LastLight.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -46,7 +48,12 @@ namespace LastLight.Player
                 // yere dusen esya nesnesi henuz yok.
                 var drop = ItemDatabase.DropFor(broken);
                 if (drop != ItemId.None && inventory != null)
-                    inventory.Inventory.Add(drop, 1);
+                {
+                    int amount = 1;
+                    float extra = PlayerSkills.Instance?.State.ExtraDropChance ?? 0f;
+                    if (extra > 0f && Random.value < extra) amount++;
+                    inventory.Inventory.Add(drop, amount);
+                }
 
                 // Yapisal kontrol SetBlock'un icinden degil buradan cagriliyor:
                 // cokme sirasinda SetBlock tekrar cagrildigi icin ic ice
@@ -61,7 +68,18 @@ namespace LastLight.Player
                 if (!OverlapsPlayer(_placeAt) && inventory != null)
                 {
                     var stack = inventory.Inventory.Selected;
-                    if (!stack.IsEmpty && ItemDatabase.IsPlaceable(stack.Id))
+
+                    // Mesale blok degil isik nesnesi olarak yerlesiyor:
+                    // blok olsaydi chunk mesh'ine girer ve her sonusunde
+                    // chunk yeniden uretilirdi.
+                    if (stack.Id == ItemId.Torch)
+                    {
+                        float drain = PlacedLight.DrainRateAt(
+                            _placeAt.x, _placeAt.z, world.WorldSizeX, world.WorldSizeZ);
+                        PlacedLight.Spawn((Vector3)_placeAt + new Vector3(0.5f, 0.25f, 0.5f), drain);
+                        inventory.Inventory.RemoveAt(inventory.Inventory.SelectedIndex);
+                    }
+                    else if (!stack.IsEmpty && ItemDatabase.IsPlaceable(stack.Id))
                     {
                         world.SetBlock(_placeAt.x, _placeAt.y, _placeAt.z, ItemDatabase.BlockFor(stack.Id));
                         inventory.Inventory.RemoveAt(inventory.Inventory.SelectedIndex);

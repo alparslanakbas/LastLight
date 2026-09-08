@@ -44,6 +44,10 @@ namespace LastLight.Voxel
         // ---------- Dunya koordinatiyla erisim ----------
 
         /// <summary>Dunya koordinatindaki blogu dondurur. Dunya disi = Air.</summary>
+        /// <summary>Dunya genisligi (blok). Biyom sorgulari icin disariya acik.</summary>
+        public int WorldSizeX => sizeX * Chunk.Size;
+        public int WorldSizeZ => sizeZ * Chunk.Size;
+
         public BlockId GetBlock(int wx, int wy, int wz)
         {
             Vector3Int coord = ToChunkCoord(wx, wy, wz);

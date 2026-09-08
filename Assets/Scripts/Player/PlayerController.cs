@@ -1,3 +1,4 @@
+using LastLight.Skills;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -79,6 +80,8 @@ namespace LastLight.Player
             if (input.sqrMagnitude > 1f) input.Normalize();   // capraz gidiste hizlanmayi engeller
 
             float speed = kb.leftShiftKey.isPressed ? sprintSpeed : walkSpeed;
+            if (kb.leftShiftKey.isPressed && PlayerSkills.Instance != null)
+                speed *= PlayerSkills.Instance.State.SprintMultiplier;
 
             if (_controller.isGrounded)
             {

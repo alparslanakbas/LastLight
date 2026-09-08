@@ -11,9 +11,20 @@ namespace LastLight.Items
     public sealed class Inventory
     {
         public const int HotbarSize = 8;
-        public const int TotalSlots = 32;
+        public const int BaseSlots = 32;
 
-        readonly ItemStack[] _slots = new ItemStack[TotalSlots];
+        // Sabit dizi degil: "Yuk Tasiyici" perk'i kapasiteyi buyutuyor.
+        ItemStack[] _slots = new ItemStack[BaseSlots];
+
+        public int SlotCount => _slots.Length;
+
+        /// <summary>Kapasiteyi degistirir. Kucultme mevcut esyayi korumak icin engelli.</summary>
+        public void Resize(int newSize)
+        {
+            if (newSize <= _slots.Length) return;
+            System.Array.Resize(ref _slots, newSize);
+            Changed?.Invoke();
+        }
 
         public int SelectedIndex { get; private set; }
 
@@ -45,7 +56,7 @@ namespace LastLight.Items
         {
             if (id == ItemId.None || count <= 0) return 0;
 
-            for (int i = 0; i < TotalSlots && count > 0; i++)
+            for (int i = 0; i < _slots.Length && count > 0; i++)
             {
                 if (_slots[i].Id != id) continue;
                 int space = ItemStack.MaxStack - _slots[i].Count;
@@ -56,7 +67,7 @@ namespace LastLight.Items
                 count -= move;
             }
 
-            for (int i = 0; i < TotalSlots && count > 0; i++)
+            for (int i = 0; i < _slots.Length && count > 0; i++)
             {
                 if (!_slots[i].IsEmpty) continue;
                 int move = Mathf.Min(ItemStack.MaxStack, count);
@@ -71,7 +82,7 @@ namespace LastLight.Items
         /// <summary>Belirli bir slottan esya dusurur.</summary>
         public bool RemoveAt(int index, int count = 1)
         {
-            if (index < 0 || index >= TotalSlots) return false;
+            if (index < 0 || index >= _slots.Length) return false;
             if (_slots[index].IsEmpty || _slots[index].Count < count) return false;
 
             int left = _slots[index].Count - count;
@@ -84,7 +95,7 @@ namespace LastLight.Items
         public int CountOf(ItemId id)
         {
             int total = 0;
-            for (int i = 0; i < TotalSlots; i++)
+            for (int i = 0; i < _slots.Length; i++)
                 if (_slots[i].Id == id) total += _slots[i].Count;
             return total;
         }
@@ -94,7 +105,7 @@ namespace LastLight.Items
         {
             if (CountOf(id) < count) return false;
 
-            for (int i = 0; i < TotalSlots && count > 0; i++)
+            for (int i = 0; i < _slots.Length && count > 0; i++)
             {
                 if (_slots[i].Id != id) continue;
                 int take = Mathf.Min(_slots[i].Count, count);
