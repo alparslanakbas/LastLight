@@ -30,12 +30,7 @@ namespace LastLight.Voxel
 
         void Start()
         {
-            GenerateFlatWorld();
-
-            // Sehir arazi uretildikten SONRA kuruluyor: binalar zemin
-            // yuksekligini okuyarak oturuyor, once kurulsa havada kalirdi.
-            if (generateCity)
-                CityGenerator.Generate(this, sizeX * Chunk.Size, sizeZ * Chunk.Size, seed);
+            GenerateWorld();
 
             foreach (var coord in _chunks.Keys) _dirty.Add(coord);
             RebuildDirtyChunks();
@@ -99,8 +94,11 @@ namespace LastLight.Voxel
 
         // ---------- Uretim ve mesh ----------
 
-        void GenerateFlatWorld()
+        void GenerateWorld()
         {
+            int worldX = sizeX * Chunk.Size;
+            int worldZ = sizeZ * Chunk.Size;
+
             for (int cx = 0; cx < sizeX; cx++)
             for (int cy = 0; cy < sizeY; cy++)
             for (int cz = 0; cz < sizeZ; cz++)
@@ -108,29 +106,17 @@ namespace LastLight.Voxel
                 var coord = new Vector3Int(cx, cy, cz);
                 var chunk = new Chunk(coord);
                 _chunks[coord] = chunk;
-
-                for (int x = 0; x < Chunk.Size; x++)
-                for (int z = 0; z < Chunk.Size; z++)
-                {
-                    int wx = cx * Chunk.Size + x;
-                    int wz = cz * Chunk.Size + z;
-
-                    // Yumusak tepeler - test icin yeterli, gercek uretim sonra.
-                    float n = Mathf.PerlinNoise(wx * 0.05f, wz * 0.05f);
-                    int height = 8 + Mathf.RoundToInt(n * 6f);
-
-                    for (int y = 0; y < Chunk.Size; y++)
-                    {
-                        int wy = cy * Chunk.Size + y;
-                        if (wy > height) continue;
-
-                        BlockId id = wy == height ? BlockId.Dirt
-                                   : wy > height - 4 ? BlockId.Dirt
-                                   : BlockId.Stone;
-                        chunk.Set(x, y, z, id);
-                    }
-                }
+                TerrainGenerator.FillChunk(chunk, worldX, worldZ);
             }
+
+            // Agaclar arazi bittikten sonra: bir agac chunk sinirini asabiliyor
+            // ve o chunk henuz olusmamis olabilir.
+            TerrainGenerator.PlantTrees(this, worldX, worldZ, seed);
+
+            // Sehir en son: binalar zemin yuksekligini okuyarak oturuyor,
+            // once kurulsa havada kalirdi.
+            if (generateCity)
+                CityGenerator.Generate(this, worldX, worldZ, seed);
         }
 
         /// <summary>Kirli chunk'lari yeniden mesh'ler. Temiz olanlara dokunmaz.</summary>

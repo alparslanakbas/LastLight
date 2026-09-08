@@ -11,7 +11,7 @@ namespace LastLight.Voxel
     {
         const int LotSize = 14;      // parsel kenari
         const int RoadWidth = 4;     // yol genisligi
-        const int BlendWidth = 8;    // sehir duzlugunden dogal araziye gecis serid
+        const int BlendWidth = 16;   // sehir duzlugunden dogal araziye gecis seridi
         const int Pitch = LotSize + RoadWidth;
 
         public static void Generate(VoxelWorld world, int worldX, int worldZ, int seed)
@@ -20,7 +20,10 @@ namespace LastLight.Voxel
 
             // Sehir dunyanin ortasinda; kenarlarda dogal arazi kaliyor ki
             // oyuncu sehre "varmis" hissetsin.
-            int margin = Mathf.Max(6, Mathf.Min(worldX, worldZ) / 10);
+            // Sehir dunyanin ortasinda kucuk bir alan: once dunyanin yarisini
+            // kapliyordu ve biyomlar kenar seridine sikismisti. Sehir kucukken
+            // "sehre varmak" bir olay oluyor, buyukken dunyanin kendisi oluyor.
+            int margin = Mathf.RoundToInt(Mathf.Min(worldX, worldZ) * 0.30f);
             int cityMinX = margin, cityMaxX = worldX - margin;
             int cityMinZ = margin, cityMaxZ = worldZ - margin;
 
@@ -69,8 +72,15 @@ namespace LastLight.Voxel
                 int target = Mathf.RoundToInt(Mathf.Lerp(natural, level, t));
 
                 if (target > natural)
+                {
+                    // Dolgu, o noktanin kendi yuzey blogunu kullaniyor -
+                    // sabit toprak koyunca corak bolgenin ortasinda kahverengi
+                    // yamalar olusuyordu.
+                    BlockId fill = world.GetBlock(x, natural, z);
+                    if (!BlockDatabase.IsSolid(fill)) fill = BlockId.Stone;
                     for (int y = natural + 1; y <= target; y++)
-                        world.SetBlock(x, y, z, BlockId.Dirt);
+                        world.SetBlock(x, y, z, fill);
+                }
                 else
                     for (int y = natural; y > target; y--)
                         world.SetBlock(x, y, z, BlockId.Air);
@@ -127,7 +137,7 @@ namespace LastLight.Voxel
         {
             // Kenar seritlerinde kucuk kumeler. Sehirden farkli olarak yolsuz
             // ve duzensiz - siluetten bile ayirt edilebilsin diye.
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 10; i++)
             {
                 int cx = rng.Next(4, worldX - 4);
                 int cz = rng.Next(4, worldZ - 4);

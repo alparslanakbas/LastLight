@@ -10,6 +10,12 @@ namespace LastLight.Voxel
         Metal = 4,
         Concrete = 5,
         Road = 6,
+        Grass = 7,
+        Sand = 8,
+        Snow = 9,
+        Ash = 10,
+        Waste = 11,
+        Leaves = 12,
     }
 
     /// <summary>
@@ -44,6 +50,12 @@ namespace LastLight.Voxel
             /* Metal */ new BlockDef(true,  6f,  32,  3),
             /* Concr */ new BlockDef(true,  4f,  24,  5),
             /* Road  */ new BlockDef(true,  2f,  12,  3),
+            /* Grass */ new BlockDef(true,  1f,   4,  2),
+            /* Sand  */ new BlockDef(true,  0.8f, 2,  2),
+            /* Snow  */ new BlockDef(true,  0.6f, 2,  1),
+            /* Ash   */ new BlockDef(true,  0.9f, 3,  2),
+            /* Waste */ new BlockDef(true,  1.2f, 4,  2),
+            /* Leaves*/ new BlockDef(true,  0.3f, 1,  1),
         };
 
         public static BlockDef Get(BlockId id) => Defs[(int)id];
