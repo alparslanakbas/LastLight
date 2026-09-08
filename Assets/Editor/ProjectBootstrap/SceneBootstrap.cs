@@ -1,4 +1,5 @@
 using System.IO;
+using LastLight.Items;
 using LastLight.Player;
 using LastLight.Voxel;
 using UnityEditor;
@@ -172,12 +173,17 @@ namespace ProjectBootstrap
             so.FindProperty("cameraPivot").objectReferenceValue = pivot.transform;
             so.ApplyModifiedPropertiesWithoutUndo();
 
+            // Envanter blok etkilesiminden ONCE ekleniyor: etkilesim bilesenine
+            // referans olarak veriliyor.
+            var inv = player.AddComponent<PlayerInventory>();
+
             // Blok kirma/koyma. Referanslar burada baglaniyor; runtime'da
             // FindAnyObjectByType ile aramak sahne buyudukce pahali.
             var interaction = player.AddComponent<BlockInteraction>();
             var soi = new SerializedObject(interaction);
             soi.FindProperty("cameraPivot").objectReferenceValue = pivot.transform;
             soi.FindProperty("world").objectReferenceValue = world;
+            soi.FindProperty("inventory").objectReferenceValue = inv;
             soi.ApplyModifiedPropertiesWithoutUndo();
         }
 

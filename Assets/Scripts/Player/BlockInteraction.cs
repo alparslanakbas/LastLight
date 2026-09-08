@@ -1,3 +1,4 @@
+using LastLight.Items;
 using LastLight.Voxel;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,7 +15,7 @@ namespace LastLight.Player
         [SerializeField] Transform cameraPivot;
         [SerializeField] VoxelWorld world;
         [SerializeField] float reach = 5f;
-        [SerializeField] BlockId placeBlock = BlockId.Wood;
+        [SerializeField] PlayerInventory inventory;
 
         LineRenderer _outline;
         bool _hasTarget;
@@ -24,6 +25,7 @@ namespace LastLight.Player
         void Awake()
         {
             if (world == null) world = FindAnyObjectByType<VoxelWorld>();
+            if (inventory == null) inventory = GetComponent<PlayerInventory>();
             if (cameraPivot == null && Camera.main != null) cameraPivot = Camera.main.transform;
             CreateOutline();
         }
@@ -37,7 +39,15 @@ namespace LastLight.Player
 
             if (Mouse.current.leftButton.wasPressedThisFrame)
             {
+                BlockId broken = world.GetBlock(_targetBlock.x, _targetBlock.y, _targetBlock.z);
                 world.SetBlock(_targetBlock.x, _targetBlock.y, _targetBlock.z, BlockId.Air);
+
+                // Kirilan blok envantere. Envanter doluysa fazlasi kayboluyor -
+                // yere dusen esya nesnesi henuz yok.
+                var drop = ItemDatabase.DropFor(broken);
+                if (drop != ItemId.None && inventory != null)
+                    inventory.Inventory.Add(drop, 1);
+
                 // Yapisal kontrol SetBlock'un icinden degil buradan cagriliyor:
                 // cokme sirasinda SetBlock tekrar cagrildigi icin ic ice
                 // degerlendirme ve sonsuz dongu riski olurdu.
@@ -48,21 +58,22 @@ namespace LastLight.Player
             {
                 // Kendi durdugumuz yere blok koymayi engelle - yoksa oyuncu
                 // kendini bloklarin icine hapsediyor.
-                if (!OverlapsPlayer(_placeAt))
+                if (!OverlapsPlayer(_placeAt) && inventory != null)
                 {
-                    world.SetBlock(_placeAt.x, _placeAt.y, _placeAt.z, placeBlock);
-                    StructuralIntegrity.Evaluate(world, _placeAt);
+                    var stack = inventory.Inventory.Selected;
+                    if (!stack.IsEmpty && ItemDatabase.IsPlaceable(stack.Id))
+                    {
+                        world.SetBlock(_placeAt.x, _placeAt.y, _placeAt.z, ItemDatabase.BlockFor(stack.Id));
+                        inventory.Inventory.RemoveAt(inventory.Inventory.SelectedIndex);
+                        StructuralIntegrity.Evaluate(world, _placeAt);
+                    }
                 }
             }
 
-            // Fare tekerlegiyle konulacak blok tipini degistir.
+            // Fare tekerlegi hotbar slotunu degistirir.
             float scroll = Mouse.current.scroll.ReadValue().y;
-            if (Mathf.Abs(scroll) > 0.01f)
-            {
-                int next = (int)placeBlock + (scroll > 0 ? 1 : -1);
-                int min = (int)BlockId.Dirt, max = BlockDatabase.TypeCount - 1;
-                placeBlock = (BlockId)Mathf.Clamp(next, min, max);
-            }
+            if (Mathf.Abs(scroll) > 0.01f && inventory != null)
+                inventory.Inventory.ScrollSelection(scroll > 0 ? 1 : -1);
         }
 
         void UpdateTarget()
@@ -158,8 +169,6 @@ namespace LastLight.Player
             var c = new Rect(Screen.width * 0.5f - s * 0.5f, Screen.height * 0.5f - s * 0.5f, s, s);
             GUI.color = Color.white;
             GUI.DrawTexture(c, Texture2D.whiteTexture);
-
-            GUI.Label(new Rect(12, 12, 300, 22), $"Konulacak blok: {placeBlock}  (tekerlek ile degistir)");
         }
     }
 }
