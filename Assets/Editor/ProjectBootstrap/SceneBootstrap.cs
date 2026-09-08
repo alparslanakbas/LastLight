@@ -177,6 +177,11 @@ namespace ProjectBootstrap
             // referans olarak veriliyor.
             var inv = player.AddComponent<PlayerInventory>();
 
+            var crafting = player.AddComponent<CraftingUI>();
+            var soc = new SerializedObject(crafting);
+            soc.FindProperty("inventory").objectReferenceValue = inv;
+            soc.ApplyModifiedPropertiesWithoutUndo();
+
             // Blok kirma/koyma. Referanslar burada baglaniyor; runtime'da
             // FindAnyObjectByType ile aramak sahne buyudukce pahali.
             var interaction = player.AddComponent<BlockInteraction>();
