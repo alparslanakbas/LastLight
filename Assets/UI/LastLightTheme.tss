@@ -1,0 +1,3 @@
+/* Unity'nin varsayilan runtime temasini iceri alir: yazi tipi ve temel
+   kontrol stilleri oradan geliyor. Kendi gorunumumuz GameMenu.uss'te. */
+@import url("unity-theme://default");

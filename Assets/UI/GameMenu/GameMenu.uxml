@@ -1,0 +1,68 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:Style src="GameMenu.uss" />
+
+  <ui:VisualElement name="root" class="root" picking-mode="Ignore">
+
+    <!-- Tab ile acilan buyuk ekran -->
+    <ui:VisualElement name="menuOverlay" class="menu-overlay">
+
+      <ui:VisualElement name="tabBar" class="tab-bar">
+        <ui:Button name="tabCrafting" text="URETIM" class="tab-button tab-button--active" />
+        <ui:Button name="tabSkills" text="BECERILER" class="tab-button" />
+        <ui:Button name="tabCharacter" text="KARAKTER" class="tab-button" />
+        <ui:VisualElement class="tab-spacer" />
+        <ui:Label name="menuHint" text="Tab ile kapat" class="tab-hint" />
+      </ui:VisualElement>
+
+      <ui:VisualElement name="menuBody" class="menu-body">
+
+        <!-- SOL: aktif sekmenin icerigi -->
+        <ui:VisualElement name="leftPanel" class="panel panel--left">
+
+          <ui:VisualElement name="craftingPage" class="page">
+            <ui:Label text="TARIFLER" class="panel-title" />
+            <ui:ScrollView name="recipeList" class="scroll" />
+          </ui:VisualElement>
+
+          <ui:VisualElement name="skillsPage" class="page page--hidden">
+            <ui:VisualElement class="panel-header">
+              <ui:Label text="BECERILER" class="panel-title" />
+              <ui:Label name="skillPoints" text="Puan: 0" class="panel-badge" />
+            </ui:VisualElement>
+            <ui:Label text="Puan her hayatta kalinan geceden gelir." class="panel-note" />
+            <ui:ScrollView name="skillList" class="scroll" />
+          </ui:VisualElement>
+
+          <ui:VisualElement name="characterPage" class="page page--hidden">
+            <ui:Label text="KARAKTER" class="panel-title" />
+            <ui:ScrollView name="characterInfo" class="scroll" />
+          </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- SAG: envanter her sekmede gorunur -->
+        <ui:VisualElement name="rightPanel" class="panel panel--right">
+          <ui:VisualElement class="panel-header">
+            <ui:Label text="ENVANTER" class="panel-title" />
+            <ui:Label name="slotCount" text="0/32" class="panel-badge" />
+          </ui:VisualElement>
+          <ui:ScrollView name="inventoryScroll" class="scroll">
+            <ui:VisualElement name="inventoryGrid" class="grid" />
+          </ui:ScrollView>
+        </ui:VisualElement>
+
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- Oyun ekraninda surekli gorunenler -->
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+      <ui:VisualElement name="clockBox" class="clock-box">
+        <ui:Label name="clockLabel" text="Gun 1  06:00" class="clock-text" />
+        <ui:Label name="phaseLabel" text="Gunduz" class="clock-phase" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <ui:VisualElement name="hotbar" class="hotbar" />
+
+  </ui:VisualElement>
+</ui:UXML>

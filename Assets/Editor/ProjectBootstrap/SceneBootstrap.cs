@@ -2,11 +2,13 @@ using System.IO;
 using LastLight.Items;
 using LastLight.Player;
 using LastLight.Skills;
+using LastLight.UI;
 using LastLight.Voxel;
 using LastLight.World;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace ProjectBootstrap
 {
@@ -48,6 +50,7 @@ namespace ProjectBootstrap
             SetupLighting();
             GameObject world = CreateWorld(mats);
             CreatePlayer(world.GetComponent<VoxelWorld>());
+            CreateUI();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -181,10 +184,6 @@ namespace ProjectBootstrap
 
             player.AddComponent<PlayerSkills>();
 
-            var crafting = player.AddComponent<CraftingUI>();
-            var soc = new SerializedObject(crafting);
-            soc.FindProperty("inventory").objectReferenceValue = inv;
-            soc.ApplyModifiedPropertiesWithoutUndo();
 
             // Blok kirma/koyma. Referanslar burada baglaniyor; runtime'da
             // FindAnyObjectByType ile aramak sahne buyudukce pahali.
@@ -194,6 +193,49 @@ namespace ProjectBootstrap
             soi.FindProperty("world").objectReferenceValue = world;
             soi.FindProperty("inventory").objectReferenceValue = inv;
             soi.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // ---------- Arayuz ----------
+
+        const string UiDir = "Assets/UI";
+        const string PanelSettingsPath = UiDir + "/PanelSettings.asset";
+        const string ThemePath = UiDir + "/LastLightTheme.tss";
+        const string UxmlPath = UiDir + "/GameMenu/GameMenu.uxml";
+
+        static void CreateUI()
+        {
+            var existing = GameObject.Find("GameUI");
+            if (existing != null) Object.DestroyImmediate(existing);
+
+            // PanelSettings olmadan UI Toolkit hicbir sey cizmiyor.
+            var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
+            if (panel == null)
+            {
+                panel = ScriptableObject.CreateInstance<PanelSettings>();
+                AssetDatabase.CreateAsset(panel, PanelSettingsPath);
+            }
+
+            // Tema yazi tipini sagliyor; atanmazsa metinler cizilmiyor.
+            var theme = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(ThemePath);
+            if (theme != null) panel.themeStyleSheet = theme;
+
+            // Cozunurluk degisince arayuz olcegi bozulmasin diye sabit referans.
+            panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+            panel.referenceResolution = new Vector2Int(1920, 1080);
+            EditorUtility.SetDirty(panel);
+
+            var uxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UxmlPath);
+            if (uxml == null)
+            {
+                Debug.LogError("[SceneBootstrap] UXML bulunamadi: " + UxmlPath);
+                return;
+            }
+
+            var go = new GameObject("GameUI");
+            var doc = go.AddComponent<UIDocument>();
+            doc.panelSettings = panel;
+            doc.visualTreeAsset = uxml;
+            go.AddComponent<GameMenuController>();
         }
 
         // ---------- Isik ----------
@@ -225,7 +267,6 @@ namespace ProjectBootstrap
             so.FindProperty("sun").objectReferenceValue = light;
             so.ApplyModifiedPropertiesWithoutUndo();
 
-            cycleGo.AddComponent<WorldHUD>();
         }
     }
 }

@@ -13,8 +13,6 @@ namespace LastLight.Items
     {
         public Inventory Inventory { get; } = new();
 
-        [SerializeField] bool showHotbar = true;
-
         void Awake()
         {
             // Baslangic esyasi: oyuncunun ilk dakikada bir sey insa edebilmesi
@@ -42,43 +40,8 @@ namespace LastLight.Items
                     Inventory.Select(i);
         }
 
-        void OnGUI()
-        {
-            if (!showHotbar) return;
 
-            const int slot = 54, pad = 4;
-            int total = Inventory.HotbarSize * (slot + pad) - pad;
-            int x0 = (Screen.width - total) / 2;
-            int y0 = Screen.height - slot - 14;
-
-            for (int i = 0; i < Inventory.HotbarSize; i++)
-            {
-                var rect = new Rect(x0 + i * (slot + pad), y0, slot, slot);
-                bool selected = i == Inventory.SelectedIndex;
-
-                GUI.color = selected ? new Color(1f, 1f, 1f, 0.9f) : new Color(0f, 0f, 0f, 0.5f);
-                GUI.DrawTexture(rect, Texture2D.whiteTexture);
-
-                var inner = new Rect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4);
-                var stack = Inventory[i];
-
-                GUI.color = stack.IsEmpty ? new Color(0.1f, 0.1f, 0.1f, 0.6f) : ColorFor(stack.Id);
-                GUI.DrawTexture(inner, Texture2D.whiteTexture);
-
-                GUI.color = Color.white;
-                if (!stack.IsEmpty)
-                {
-                    GUI.Label(new Rect(inner.x + 3, inner.y + 1, slot, 18), ItemDatabase.DisplayName(stack.Id)[..Mathf.Min(5, ItemDatabase.DisplayName(stack.Id).Length)]);
-                    GUI.Label(new Rect(inner.x + 3, inner.yMax - 20, slot, 18), stack.Count.ToString());
-                }
-
-                GUI.Label(new Rect(rect.x + 3, rect.y - 16, 20, 16), (i + 1).ToString());
-            }
-
-            GUI.color = Color.white;
-        }
-
-        /// <summary>Hotbar kutusunun rengi. Blok malzemeleriyle ayni palet.</summary>
+        /// <summary>Envanter kutusunun rengi. Blok malzemeleriyle ayni palet.</summary>
         public static Color ColorFor(ItemId id) => id switch
         {
             ItemId.Dirt => new Color(0.42f, 0.31f, 0.20f),
