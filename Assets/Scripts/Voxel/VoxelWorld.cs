@@ -151,8 +151,13 @@ namespace LastLight.Voxel
                 mats[i] = MaterialFor(types[i]);
 
             view.Renderer.sharedMaterials = mats;
-            view.Collider.sharedMesh = null;          // once bosalt, yoksa Unity eski mesh'i tutar
-            view.Collider.sharedMesh = view.Mesh;
+
+            // Once bosalt, yoksa Unity eski mesh'i tutuyor. Tamamen bos chunk'a
+            // (hava) mesh atarsak Unity "mesh has no vertices" uyarisi veriyor
+            // ve bos bir collider tutmanin faydasi da yok.
+            view.Collider.sharedMesh = null;
+            if (view.Mesh.vertexCount > 0)
+                view.Collider.sharedMesh = view.Mesh;
         }
 
         /// <summary>Dusen bloklarin dogru renkte cizilebilmesi icin disariya acik.</summary>

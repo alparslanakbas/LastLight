@@ -20,6 +20,11 @@ namespace LastLight.Voxel
             go.AddComponent<MeshFilter>().sharedMesh = view.Mesh;
             view.Renderer = go.AddComponent<MeshRenderer>();
             view.Collider = go.AddComponent<MeshCollider>();
+
+            // MeshCollider eklendiginde Unity mesh'i MeshFilter'dan otomatik
+            // aliyor; chunk henuz bos oldugu icin bu "mesh has no vertices"
+            // uyarisi uretiyordu. Mesh dolunca VoxelWorld zaten atiyor.
+            view.Collider.sharedMesh = null;
             return view;
         }
 

@@ -42,7 +42,7 @@
 }
 
 .tab-button {
-  padding: 8px 22px;
+  padding: 8px 14px;
   margin-right: 4px;
   background-color: rgba(20, 20, 24, 0.9);
   border-width: 1px;
@@ -70,9 +70,10 @@
   flex-grow: 1;
 }
 
-.tab-hint {
-  color: var(--text-dim);
-  font-size: 11px;
+.tab-title {
+  color: var(--accent);
+  font-size: 15px;
+  -unity-font-style: bold;
 }
 
 .menu-body {
@@ -92,8 +93,20 @@
   margin-right: var(--space);
 }
 
-.panel--right {
+.right-column {
   width: 560px;
+  flex-direction: column;
+}
+
+/* Ust: secili ogenin aciklamasi, alt: envanter. 7DTD'de de detay ve
+   envanter ayni sutunda ust uste duruyor. */
+.panel--detail {
+  height: 38%;
+  margin-bottom: 8px;
+}
+
+.panel--inventory {
+  flex-grow: 1;
 }
 
 .page {
@@ -214,6 +227,26 @@
   -unity-font-style: bold;
   margin-top: 10px;
   margin-bottom: 4px;
+}
+
+.detail-text {
+  color: var(--text);
+  font-size: 12px;
+  white-space: normal;
+  margin-bottom: 6px;
+}
+
+.detail-note {
+  color: var(--text-dim);
+  font-size: 11px;
+  white-space: normal;
+}
+
+.empty-note {
+  color: var(--text-dim);
+  font-size: 12px;
+  white-space: normal;
+  padding: 12px 4px;
 }
 
 /* ---------- Envanter ---------- */
