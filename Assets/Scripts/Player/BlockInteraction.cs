@@ -36,14 +36,23 @@ namespace LastLight.Player
             if (Cursor.lockState != CursorLockMode.Locked) return;
 
             if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
                 world.SetBlock(_targetBlock.x, _targetBlock.y, _targetBlock.z, BlockId.Air);
+                // Yapisal kontrol SetBlock'un icinden degil buradan cagriliyor:
+                // cokme sirasinda SetBlock tekrar cagrildigi icin ic ice
+                // degerlendirme ve sonsuz dongu riski olurdu.
+                StructuralIntegrity.Evaluate(world, _targetBlock);
+            }
 
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
                 // Kendi durdugumuz yere blok koymayi engelle - yoksa oyuncu
                 // kendini bloklarin icine hapsediyor.
                 if (!OverlapsPlayer(_placeAt))
+                {
                     world.SetBlock(_placeAt.x, _placeAt.y, _placeAt.z, placeBlock);
+                    StructuralIntegrity.Evaluate(world, _placeAt);
+                }
             }
 
             // Fare tekerlegiyle konulacak blok tipini degistir.

@@ -155,6 +155,9 @@ namespace LastLight.Voxel
             view.Collider.sharedMesh = view.Mesh;
         }
 
+        /// <summary>Dusen bloklarin dogru renkte cizilebilmesi icin disariya acik.</summary>
+        public Material GetBlockMaterial(BlockId id) => MaterialFor((int)id);
+
         Material MaterialFor(int blockType)
         {
             if (blockMaterials != null && blockType < blockMaterials.Length && blockMaterials[blockType] != null)
