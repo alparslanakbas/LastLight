@@ -31,7 +31,7 @@
   display: none;
 }
 
-.menu-overlay--open {
+.menu-overlay.menu-overlay--open {
   display: flex;
 }
 
@@ -39,19 +39,23 @@
   flex-direction: row;
   align-items: center;
   margin-bottom: var(--space);
+  background-color: rgba(0, 0, 0, 0.55);
+  border-width: 1px;
+  border-color: var(--border-soft);
+  padding: 3px;
 }
 
 .tab-button {
-  padding: 8px 14px;
-  margin-right: 4px;
-  background-color: rgba(20, 20, 24, 0.9);
-  border-width: 1px;
-  border-color: var(--border-soft);
+  padding: 7px 16px;
+  margin-right: 2px;
+  background-color: transparent;
+  border-width: 0;
   border-bottom-width: 2px;
   border-bottom-color: transparent;
   color: var(--text-dim);
-  font-size: 13px;
+  font-size: 12px;
   -unity-font-style: bold;
+  letter-spacing: 1px;
   transition-duration: 0.12s;
 }
 
@@ -63,7 +67,7 @@
 .tab-button--active {
   color: var(--accent);
   border-bottom-color: var(--accent);
-  background-color: rgba(30, 28, 24, 0.95);
+  background-color: rgba(217, 164, 65, 0.10);
 }
 
 .tab-spacer {
@@ -85,7 +89,21 @@
   background-color: var(--bg-panel);
   border-width: 1px;
   border-color: var(--border-soft);
-  padding: 12px;
+  padding: 0;
+}
+
+/* Referans arayuzde her panelin ustunde koyu bir baslik seridi var;
+   panelleri birbirinden ayiran ve ekrani okunur yapan sey bu. */
+.panel-header {
+  background-color: rgba(0, 0, 0, 0.55);
+  border-bottom-width: 1px;
+  border-bottom-color: var(--border-soft);
+  padding: 7px 12px;
+  margin-bottom: 0;
+}
+
+.panel > .scroll {
+  padding: 8px 10px;
 }
 
 .panel--left {
@@ -121,14 +139,13 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
 }
 
 .panel-title {
-  color: var(--accent);
+  color: var(--text);
   font-size: 13px;
   -unity-font-style: bold;
-  margin-bottom: 6px;
+  letter-spacing: 1px;
 }
 
 .panel-badge {
@@ -139,7 +156,7 @@
 .panel-note {
   color: var(--text-dim);
   font-size: 11px;
-  margin-bottom: 8px;
+  padding: 6px 12px 0 12px;
   white-space: normal;
 }
 
@@ -152,11 +169,13 @@
 .row {
   flex-direction: row;
   align-items: center;
-  padding: 8px 10px;
-  margin-bottom: 4px;
-  background-color: rgba(255, 255, 255, 0.04);
+  padding: 7px 10px;
+  margin-bottom: 2px;
+  background-color: rgba(255, 255, 255, 0.035);
   border-left-width: 3px;
   border-left-color: transparent;
+  border-bottom-width: 1px;
+  border-bottom-color: rgba(0, 0, 0, 0.35);
   transition-duration: 0.12s;
 }
 
@@ -259,11 +278,11 @@
 .slot {
   width: 62px;
   height: 62px;
-  margin-right: 4px;
-  margin-bottom: 4px;
-  background-color: var(--bg-slot);
+  margin-right: 3px;
+  margin-bottom: 3px;
+  background-color: rgba(0, 0, 0, 0.42);
   border-width: 1px;
-  border-color: var(--border-soft);
+  border-color: rgba(255, 255, 255, 0.13);
   justify-content: flex-end;
   transition-duration: 0.12s;
 }
@@ -280,26 +299,30 @@
 
 .slot-fill {
   position: absolute;
-  left: 4px;
-  top: 4px;
-  right: 4px;
-  bottom: 4px;
+  left: 5px;
+  top: 5px;
+  right: 5px;
+  bottom: 5px;
+  border-width: 1px;
+  border-color: rgba(0, 0, 0, 0.45);
 }
 
 .slot-name {
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.95);
   font-size: 9px;
-  padding-left: 3px;
+  padding-left: 4px;
   padding-right: 3px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
 }
 
 .slot-count {
   color: rgb(255, 255, 255);
-  font-size: 12px;
+  font-size: 13px;
   -unity-font-style: bold;
   -unity-text-align: lower-right;
-  padding-right: 4px;
+  padding-right: 5px;
   padding-bottom: 2px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
 }
 
 /* ---------- Surekli gorunen HUD ---------- */
@@ -310,8 +333,8 @@
   top: 14px;
 }
 
-/* Menu acikken saat kutusu sekme ipucuyla ust uste biniyordu. */
-.hud--hidden {
+/* Menu acikken saat kutusu sekme cubuguyla ust uste biniyordu. */
+.hud.hud--hidden {
   display: none;
 }
 
@@ -344,7 +367,7 @@
 
 .hotbar {
   position: absolute;
-  bottom: 18px;
+  bottom: 16px;
   left: 0;
   right: 0;
   flex-direction: row;
@@ -354,11 +377,11 @@
 .hotbar-slot {
   width: 58px;
   height: 58px;
-  margin-left: 3px;
-  margin-right: 3px;
-  background-color: rgba(0, 0, 0, 0.55);
+  margin-left: 1px;
+  margin-right: 1px;
+  background-color: rgba(0, 0, 0, 0.62);
   border-width: 1px;
-  border-color: var(--border-soft);
+  border-color: rgba(255, 255, 255, 0.16);
   justify-content: flex-end;
 }
 
