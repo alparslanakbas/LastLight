@@ -18,8 +18,8 @@ namespace LastLight.Voxel
         [SerializeField] int seed = 1337;
         [SerializeField] bool generateCity = true;
 
-        [Header("Blok tipi basina malzeme (BlockId sirasiyla)")]
-        [SerializeField] Material[] blockMaterials;
+        [Header("Blok atlasi malzemesi")]
+        [SerializeField] Material blockMaterial;
 
         readonly Dictionary<Vector3Int, Chunk> _chunks = new();
         readonly Dictionary<Vector3Int, ChunkView> _views = new();
@@ -143,14 +143,10 @@ namespace LastLight.Voxel
                 _views[coord] = view;
             }
 
-            // Build, urettigi submesh'lerin blok tiplerini sirasiyla dondurur;
-            // bu sira malzeme dizisiyle birebir ortusmezse bloklar yanlis cizilir.
-            var types = ChunkMesher.Build(chunk, this, view.Mesh);
-            var mats = new Material[types.Count];
-            for (int i = 0; i < types.Count; i++)
-                mats[i] = MaterialFor(types[i]);
+            ChunkMesher.Build(chunk, this, view.Mesh);
 
-            view.Renderer.sharedMaterials = mats;
+            // Tum bloklar ayni atlasi kullaniyor: tek malzeme, tek draw call.
+            view.Renderer.sharedMaterial = blockMaterial;
 
             // Once bosalt, yoksa Unity eski mesh'i tutuyor. Tamamen bos chunk'a
             // (hava) mesh atarsak Unity "mesh has no vertices" uyarisi veriyor
@@ -160,14 +156,7 @@ namespace LastLight.Voxel
                 view.Collider.sharedMesh = view.Mesh;
         }
 
-        /// <summary>Dusen bloklarin dogru renkte cizilebilmesi icin disariya acik.</summary>
-        public Material GetBlockMaterial(BlockId id) => MaterialFor((int)id);
-
-        Material MaterialFor(int blockType)
-        {
-            if (blockMaterials != null && blockType < blockMaterials.Length && blockMaterials[blockType] != null)
-                return blockMaterials[blockType];
-            return null;   // Unity pembe "missing material" gosterir - eksigi gorunur kilar
-        }
+        /// <summary>Dusen bloklar da ayni atlas malzemesini kullaniyor.</summary>
+        public Material GetBlockMaterial(BlockId id) => blockMaterial;
     }
 }

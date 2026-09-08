@@ -27,6 +27,12 @@ namespace LastLight.World
         [SerializeField] Color dayAmbient = new(0.55f, 0.57f, 0.60f);
         [SerializeField] Color nightAmbient = new(0.025f, 0.03f, 0.05f);
 
+        [Header("Sis")]
+        [SerializeField] Color dayFog = new(0.62f, 0.70f, 0.80f);
+        [SerializeField] Color nightFog = new(0.03f, 0.04f, 0.07f);
+        [SerializeField] float dayFogEnd = 260f;
+        [SerializeField] float nightFogEnd = 90f;   // gece gorus mesafesi kisa
+
         /// <summary>Kacinci gun (1'den baslar). Beceri seviyesi buna baglanacak.</summary>
         public int DayNumber { get; private set; } = 1;
 
@@ -47,6 +53,14 @@ namespace LastLight.World
             Instance = this;
             if (sun == null) sun = FindAnyObjectByType<Light>();
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+
+            // Mesafe sisi derinlik algisini uretiyor: sissiz bir voxel dunyada
+            // uzak bloklar yakinlarla ayni netlikte kaliyor ve sahne duz
+            // gorunuyor. Gece sis cok daha yakin - gorus mesafesini kisaltmak
+            // isik ekonomisinin baskisini dogrudan artiriyor.
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogStartDistance = 25f;
         }
 
         void Update()
@@ -106,6 +120,14 @@ namespace LastLight.World
                     ambient += new Color(bonus, bonus, bonus * 1.2f);
 
                 RenderSettings.ambientLight = ambient;
+
+                RenderSettings.fogColor = IsNight
+                    ? Color.Lerp(dayFog, nightFog, t)
+                    : Color.Lerp(nightFog, dayFog, t);
+
+                RenderSettings.fogEndDistance = IsNight
+                    ? Mathf.Lerp(dayFogEnd, nightFogEnd, t)
+                    : Mathf.Lerp(nightFogEnd, dayFogEnd, t);
             }
         }
 

@@ -8,6 +8,8 @@ using LastLight.World;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UIElements;
 
 namespace ProjectBootstrap
@@ -46,76 +48,61 @@ namespace ProjectBootstrap
         {
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
-            Material[] mats = CreateBlockMaterials();
+            Material mat = CreateBlockMaterial();
             SetupLighting();
-            GameObject world = CreateWorld(mats);
+            GameObject world = CreateWorld(mat);
             CreatePlayer(world.GetComponent<VoxelWorld>());
             CreateUI();
+            CreatePostProcessing();
+            EnsureAmbientOcclusion();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
 
-            Debug.Log($"[SceneBootstrap] Sahne kuruldu: {world.name} + Player, {mats.Length} malzeme.");
+            Debug.Log("[SceneBootstrap] Sahne kuruldu: " + world.name + " + Player, atlas malzemesi.");
         }
 
         // ---------- Malzemeler ----------
 
-        static Material[] CreateBlockMaterials()
+        static Material CreateBlockMaterial()
         {
             if (!Directory.Exists(MaterialDir)) Directory.CreateDirectory(MaterialDir);
 
-            // Dizi indeksi BlockId ile birebir ortusmeli - mesher submesh'leri
-            // blok tipi sirasina gore uretiyor.
-            var colors = new (string name, Color color, float smoothness)[]
-            {
-                ("Air",   Color.magenta,                       0f),    // hic cizilmez; indeksi doldurmak icin
-                ("Dirt",  new Color(0.42f, 0.31f, 0.20f),      0.05f),
-                ("Stone", new Color(0.48f, 0.49f, 0.52f),      0.15f),
-                ("Wood",  new Color(0.56f, 0.38f, 0.21f),      0.10f),
-                ("Metal", new Color(0.58f, 0.61f, 0.65f),      0.55f),
-                ("Concrete", new Color(0.62f, 0.61f, 0.58f),   0.08f),
-                ("Road",  new Color(0.20f, 0.20f, 0.22f),      0.20f),
-                ("Grass", new Color(0.33f, 0.48f, 0.24f),      0.05f),
-                ("Sand",  new Color(0.78f, 0.70f, 0.46f),      0.03f),
-                ("Snow",  new Color(0.90f, 0.93f, 0.96f),      0.25f),
-                ("Ash",   new Color(0.28f, 0.26f, 0.25f),      0.02f),
-                ("Waste", new Color(0.44f, 0.35f, 0.28f),      0.04f),
-                ("Leaves",new Color(0.18f, 0.34f, 0.18f),      0.02f),
-            };
+            // Dokular yoksa once uretiyoruz - sahne kurulumu tek komutla
+            // bastan sona calissin diye.
+            const string atlasPath = "Assets/Textures/BlockAtlas.png";
+            if (AssetDatabase.LoadAssetAtPath<Texture2D>(atlasPath) == null)
+                TextureAtlasGenerator.Generate();
 
+            var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(atlasPath);
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null)
             {
                 Debug.LogError("[SceneBootstrap] URP/Lit shader bulunamadi.");
-                EditorApplication.Exit(1);
                 return null;
             }
 
-            var result = new Material[colors.Length];
-            for (int i = 0; i < colors.Length; i++)
+            const string path = MaterialDir + "/BlockAtlas.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
             {
-                string path = $"{MaterialDir}/Block_{colors[i].name}.mat";
-                var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-                if (mat == null)
-                {
-                    mat = new Material(shader);
-                    AssetDatabase.CreateAsset(mat, path);
-                }
-                mat.shader = shader;
-                mat.SetColor("_BaseColor", colors[i].color);
-                mat.SetFloat("_Smoothness", colors[i].smoothness);
-                EditorUtility.SetDirty(mat);
-                result[i] = mat;
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
             }
 
+            mat.shader = shader;
+            mat.SetTexture("_BaseMap", atlas);
+            mat.SetColor("_BaseColor", Color.white);
+            mat.SetFloat("_Smoothness", 0.04f);   // voxel yuzeyler mat olmali
+            EditorUtility.SetDirty(mat);
             AssetDatabase.SaveAssets();
-            return result;
+            return mat;
         }
 
         // ---------- Dunya ----------
 
-        static GameObject CreateWorld(Material[] mats)
+        static GameObject CreateWorld(Material mat)
         {
             var existing = GameObject.Find("VoxelWorld");
             if (existing != null) Object.DestroyImmediate(existing);
@@ -126,10 +113,7 @@ namespace ProjectBootstrap
             // Alanlar private [SerializeField] oldugu icin SerializedObject uzerinden
             // yaziliyor; reflection ile yazmak Undo/dirty takibini bozar.
             var so = new SerializedObject(world);
-            var arr = so.FindProperty("blockMaterials");
-            arr.arraySize = mats.Length;
-            for (int i = 0; i < mats.Length; i++)
-                arr.GetArrayElementAtIndex(i).objectReferenceValue = mats[i];
+            so.FindProperty("blockMaterial").objectReferenceValue = mat;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             return go;
@@ -236,6 +220,118 @@ namespace ProjectBootstrap
             doc.panelSettings = panel;
             doc.visualTreeAsset = uxml;
             go.AddComponent<GameMenuController>();
+        }
+
+        // ---------- Gorsel islem ----------
+
+        const string VolumeProfilePath = "Assets/Settings/LastLightVolume.asset";
+
+        /// <summary>
+        /// Post-processing zinciri. Dusuk poli bir oyunun "ucuz" gorunmesinin
+        /// asil sebebi geometri degil isik islemenin olmamasi: tonemapping
+        /// olmadan renkler yikaniyor, bloom olmadan isik kaynaklari parlamiyor.
+        /// </summary>
+        static void CreatePostProcessing()
+        {
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumeProfilePath);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, VolumeProfilePath);
+            }
+
+            // Var olan override'lari temizleyip bastan kuruyoruz; aksi halde
+            // her calistirmada ayni efekt tekrar ekleniyor.
+            for (int i = profile.components.Count - 1; i >= 0; i--)
+                Object.DestroyImmediate(profile.components[i], true);
+            profile.components.Clear();
+
+            // ACES: parlak yerleri yakmadan sikistiriyor. Mesale gibi kucuk ama
+            // cok parlak isiklarin oldugu bir oyunda sart.
+            var tone = profile.Add<Tonemapping>(true);
+            tone.mode.overrideState = true;
+            tone.mode.value = TonemappingMode.ACES;
+
+            // Bloom esigi 1'in uzerinde: sadece gercekten parlak seyler
+            // (mesale, gunes) tasiyor, tum sahne bulanmiyor.
+            var bloom = profile.Add<Bloom>(true);
+            bloom.threshold.overrideState = true;
+            bloom.threshold.value = 1.05f;
+            bloom.intensity.overrideState = true;
+            bloom.intensity.value = 0.7f;
+            bloom.scatter.overrideState = true;
+            bloom.scatter.value = 0.62f;
+
+            var color = profile.Add<ColorAdjustments>(true);
+            color.contrast.overrideState = true;
+            color.contrast.value = 12f;
+            color.saturation.overrideState = true;
+            color.saturation.value = 8f;
+            color.postExposure.overrideState = true;
+            color.postExposure.value = 0.15f;
+
+            // Kenar karartma dikkati merkeze topluyor ve gece hissini guclendiriyor.
+            var vignette = profile.Add<Vignette>(true);
+            vignette.intensity.overrideState = true;
+            vignette.intensity.value = 0.28f;
+            vignette.smoothness.overrideState = true;
+            vignette.smoothness.value = 0.45f;
+
+            EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssets();
+
+            var existing = GameObject.Find("Global Volume");
+            if (existing != null) Object.DestroyImmediate(existing);
+
+            var go = new GameObject("Global Volume");
+            var volume = go.AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.priority = 1f;
+            volume.sharedProfile = profile;
+        }
+
+        /// <summary>
+        /// Ekran uzayi ortam okluzyonu. Voxel bir dunyada hacim hissini ureten
+        /// tek sey blok koselerinde biriken golge; onsuz her yuzey duz karton
+        /// gibi gorunuyor. Renderer varligina bir kez ekleniyor.
+        /// </summary>
+        static void EnsureAmbientOcclusion()
+        {
+            string[] rendererPaths =
+            {
+                "Assets/Settings/PC_Renderer.asset",
+                "Assets/Settings/Mobile_Renderer.asset",
+            };
+
+            var ssaoType = System.Type.GetType(
+                "UnityEngine.Rendering.Universal.ScreenSpaceAmbientOcclusion, Unity.RenderPipelines.Universal.Runtime");
+
+            if (ssaoType == null)
+            {
+                Debug.LogWarning("[SceneBootstrap] SSAO tipi bulunamadi, ortam okluzyonu atlandi.");
+                return;
+            }
+
+            foreach (var path in rendererPaths)
+            {
+                var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(path);
+                if (data == null) continue;
+
+                bool already = false;
+                foreach (var f in data.rendererFeatures)
+                    if (f != null && f.GetType() == ssaoType) already = true;
+                if (already) continue;
+
+                var feature = (ScriptableRendererFeature)ScriptableObject.CreateInstance(ssaoType);
+                feature.name = "ScreenSpaceAmbientOcclusion";
+
+                data.rendererFeatures.Add(feature);
+                AssetDatabase.AddObjectToAsset(feature, data);
+                EditorUtility.SetDirty(data);
+                Debug.Log("[SceneBootstrap] SSAO eklendi: " + path);
+            }
+
+            AssetDatabase.SaveAssets();
         }
 
         // ---------- Isik ----------

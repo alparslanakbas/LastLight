@@ -33,23 +33,22 @@ namespace LastLight.Voxel
         static readonly List<Vector3> Verts = new(4096);
         static readonly List<Vector3> Norms = new(4096);
         static readonly List<Vector2> Uvs = new(4096);
-        static readonly List<int>[] Tris = CreateTriangleBuffers();
 
-        static List<int>[] CreateTriangleBuffers()
-        {
-            var buffers = new List<int>[BlockDatabase.TypeCount];
-            for (int i = 0; i < buffers.Length; i++) buffers[i] = new List<int>(6144);
-            return buffers;
-        }
+        // Tek liste: butun bloklar ayni atlas dokusunu kullandigi icin submesh
+        // gerekmiyor. Onceki surumde her blok tipi ayri submesh'ti ve chunk
+        // basina 13'e kadar draw call cikiyordu.
+        static readonly List<int> Tris = new(6144);
+
+        /// <summary>Atlas kenar uzunlugu (hucre sayisi). Uretecle ayni olmali.</summary>
+        const int AtlasTiles = 4;
 
         /// <summary>
         /// Chunk'i mesh'e yazar. Her blok tipi ayri submesh olur; boylece tek
         /// materyal atlasi hazirlamadan tipe gore farkli malzeme atayabiliyoruz.
         /// </summary>
-        public static List<int> Build(Chunk chunk, VoxelWorld world, Mesh mesh)
+        public static void Build(Chunk chunk, VoxelWorld world, Mesh mesh)
         {
-            Verts.Clear(); Norms.Clear(); Uvs.Clear();
-            foreach (var t in Tris) t.Clear();
+            Verts.Clear(); Norms.Clear(); Uvs.Clear(); Tris.Clear();
 
             Vector3Int origin = chunk.WorldOrigin;
 
@@ -78,7 +77,7 @@ namespace LastLight.Voxel
             }
 
             mesh.Clear();
-            if (Verts.Count == 0) return new List<int>();
+            if (Verts.Count == 0) return;
 
             mesh.indexFormat = Verts.Count > 65535
                 ? UnityEngine.Rendering.IndexFormat.UInt32
@@ -87,18 +86,9 @@ namespace LastLight.Voxel
             mesh.SetVertices(Verts);
             mesh.SetNormals(Norms);
             mesh.SetUVs(0, Uvs);
-
-            // Sadece dolu submesh'leri yaz - bos submesh gereksiz draw call uretir.
-            var used = new List<int>();
-            for (int i = 0; i < Tris.Length; i++)
-                if (Tris[i].Count > 0) used.Add(i);
-
-            mesh.subMeshCount = used.Count;
-            for (int s = 0; s < used.Count; s++)
-                mesh.SetTriangles(Tris[used[s]], s);
-
+            mesh.subMeshCount = 1;
+            mesh.SetTriangles(Tris, 0);
             mesh.RecalculateBounds();
-            return used;
         }
 
 
@@ -114,14 +104,25 @@ namespace LastLight.Voxel
                 Norms.Add(normal);
             }
 
-            Uvs.Add(new Vector2(0, 0));
-            Uvs.Add(new Vector2(0, 1));
-            Uvs.Add(new Vector2(1, 1));
-            Uvs.Add(new Vector2(1, 0));
+            // Atlas hucresi: blok kimligi dogrudan hucre indeksi.
+            int tile = (int)id;
+            float cell = 1f / AtlasTiles;
+            float tx = (tile % AtlasTiles) * cell;
+            float ty = (tile / AtlasTiles) * cell;
 
-            var tris = Tris[(int)id];
-            tris.Add(baseIndex + 0); tris.Add(baseIndex + 1); tris.Add(baseIndex + 2);
-            tris.Add(baseIndex + 0); tris.Add(baseIndex + 2); tris.Add(baseIndex + 3);
+            // Kucuk ic pay: tam kenardan orneklersek komsu hucrenin pikselleri
+            // sizip blok kenarlarinda yabanci renk cizgileri olusuyor.
+            const float pad = 0.002f;
+            float u0 = tx + pad, u1 = tx + cell - pad;
+            float v0 = ty + pad, v1 = ty + cell - pad;
+
+            Uvs.Add(new Vector2(u0, v0));
+            Uvs.Add(new Vector2(u0, v1));
+            Uvs.Add(new Vector2(u1, v1));
+            Uvs.Add(new Vector2(u1, v0));
+
+            Tris.Add(baseIndex + 0); Tris.Add(baseIndex + 1); Tris.Add(baseIndex + 2);
+            Tris.Add(baseIndex + 0); Tris.Add(baseIndex + 2); Tris.Add(baseIndex + 3);
         }
     }
 }
