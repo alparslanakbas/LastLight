@@ -8,6 +8,8 @@ namespace LastLight.Voxel
         Stone = 2,
         Wood = 3,
         Metal = 4,
+        Concrete = 5,
+        Road = 6,
     }
 
     /// <summary>
@@ -40,6 +42,8 @@ namespace LastLight.Voxel
             /* Stone */ new BlockDef(true,  3f,  16,  4),
             /* Wood  */ new BlockDef(true,  1.5f, 8,  1),
             /* Metal */ new BlockDef(true,  6f,  32,  3),
+            /* Concr */ new BlockDef(true,  4f,  24,  5),
+            /* Road  */ new BlockDef(true,  2f,  12,  3),
         };
 
         public static BlockDef Get(BlockId id) => Defs[(int)id];

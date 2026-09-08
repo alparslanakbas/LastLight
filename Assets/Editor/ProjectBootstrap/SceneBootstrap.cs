@@ -68,6 +68,8 @@ namespace ProjectBootstrap
                 ("Stone", new Color(0.48f, 0.49f, 0.52f),      0.15f),
                 ("Wood",  new Color(0.56f, 0.38f, 0.21f),      0.10f),
                 ("Metal", new Color(0.58f, 0.61f, 0.65f),      0.55f),
+                ("Concrete", new Color(0.62f, 0.61f, 0.58f),   0.08f),
+                ("Road",  new Color(0.20f, 0.20f, 0.22f),      0.20f),
             };
 
             var shader = Shader.Find("Universal Render Pipeline/Lit");

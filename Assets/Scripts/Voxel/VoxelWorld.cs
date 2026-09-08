@@ -10,9 +10,13 @@ namespace LastLight.Voxel
     public sealed class VoxelWorld : MonoBehaviour
     {
         [Header("Dunya boyutu (chunk cinsinden)")]
-        [SerializeField] int sizeX = 4;
+        [SerializeField] int sizeX = 8;
         [SerializeField] int sizeY = 2;
-        [SerializeField] int sizeZ = 4;
+        [SerializeField] int sizeZ = 8;
+
+        [Header("Uretim")]
+        [SerializeField] int seed = 1337;
+        [SerializeField] bool generateCity = true;
 
         [Header("Blok tipi basina malzeme (BlockId sirasiyla)")]
         [SerializeField] Material[] blockMaterials;
@@ -27,6 +31,12 @@ namespace LastLight.Voxel
         void Start()
         {
             GenerateFlatWorld();
+
+            // Sehir arazi uretildikten SONRA kuruluyor: binalar zemin
+            // yuksekligini okuyarak oturuyor, once kurulsa havada kalirdi.
+            if (generateCity)
+                CityGenerator.Generate(this, sizeX * Chunk.Size, sizeZ * Chunk.Size, seed);
+
             foreach (var coord in _chunks.Keys) _dirty.Add(coord);
             RebuildDirtyChunks();
         }
