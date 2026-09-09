@@ -49,6 +49,61 @@ namespace LastLight.Voxel
         }
 
         /// <summary>
+        /// Arazideki tek bloklu basamaklari rampaya cevirir.
+        ///
+        /// Voxel arazinin "Minecraft" gorunmesinin asil sebebi bu basamaklar:
+        /// her yukselti keskin bir kup kenari. Tek blokluk farklari egime
+        /// cevirince tepeler akiyor.
+        ///
+        /// Yalnizca TEK komsusu alcak olan bloklar cevriliyor. Iki komsusu
+        /// alcak olan yerler kose rampasi ister; duz rampa koyarsak bir kenar
+        /// havada kaliyor ve delik gibi gorunuyor.
+        /// </summary>
+        public static void SmoothTerrain(VoxelWorld world, int worldX, int worldZ)
+        {
+            int converted = 0;
+
+            for (int x = 1; x < worldX - 1; x++)
+            for (int z = 1; z < worldZ - 1; z++)
+            {
+                int y = SurfaceHeightAt(world, x, z);
+                if (y <= 1) continue;
+
+                // Ustu acik olmali: bina veya agac altindaki blogu egmeyiz.
+                if (BlockDatabase.IsSolid(world.GetBlock(x, y + 1, z))) continue;
+
+                int hN = SurfaceHeightAt(world, x, z + 1);
+                int hS = SurfaceHeightAt(world, x, z - 1);
+                int hE = SurfaceHeightAt(world, x + 1, z);
+                int hW = SurfaceHeightAt(world, x - 1, z);
+
+                int lowerCount = 0;
+                BlockShape shape = BlockShape.Cube;
+
+                // Rampa alcak komsuya dogru iniyor: kuzey komsu alcaksa
+                // blogun kuzey kenari alcak olmali (RampSouth).
+                if (hN == y - 1) { lowerCount++; shape = BlockShape.RampSouth; }
+                if (hS == y - 1) { lowerCount++; shape = BlockShape.RampNorth; }
+                if (hE == y - 1) { lowerCount++; shape = BlockShape.RampWest; }
+                if (hW == y - 1) { lowerCount++; shape = BlockShape.RampEast; }
+
+                if (lowerCount != 1) continue;
+
+                world.SetShape(x, y, z, shape);
+                converted++;
+            }
+
+            Debug.Log("[Terrain] " + converted + " blok rampaya cevrildi.");
+        }
+
+        static int SurfaceHeightAt(VoxelWorld world, int x, int z)
+        {
+            for (int y = Chunk.Size * 4 - 1; y >= 0; y--)
+                if (BlockDatabase.IsSolid(world.GetBlock(x, y, z))) return y;
+            return 0;
+        }
+
+        /// <summary>
         /// Agaclari dunya olustuktan sonra ekler. Chunk doldurma sirasinda
         /// eklenemez: bir agac chunk sinirini asabiliyor ve o chunk henuz
         /// olusmamis olabiliyor.

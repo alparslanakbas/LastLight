@@ -19,6 +19,24 @@ namespace LastLight.Voxel
     }
 
     /// <summary>
+    /// Blogun geometrik bicimi. Voxel dunyanin "kutu yigini" gorunmesinin
+    /// sebebi doku degil, her blogun kup olmasi. Rampa ve yarim blok araziyi
+    /// basamak olmaktan cikariyor - referans oyunlarin yuzlerce blok bicimi
+    /// tutmasinin sebebi de bu.
+    /// </summary>
+    public enum BlockShape : byte
+    {
+        Cube = 0,
+        /// <summary>Alt yarim blok - yumusak yukselti.</summary>
+        Slab = 1,
+        /// <summary>Rampa; yonu asagidaki dort degerden biriyle veriliyor.</summary>
+        RampNorth = 2,   // +Z yonune yukselir
+        RampSouth = 3,   // -Z
+        RampEast = 4,    // +X
+        RampWest = 5,    // -X
+    }
+
+    /// <summary>
     /// Bir blok tipinin degismeyen ozellikleri.
     /// Struct + readonly dizi: Job System'e tasindiginda referans tipi sorun cikarmasin diye.
     /// </summary>

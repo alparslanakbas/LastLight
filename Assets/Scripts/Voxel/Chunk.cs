@@ -14,6 +14,12 @@ namespace LastLight.Voxel
         public readonly Vector3Int Coord;   // chunk uzayindaki konum (dunya konumu = Coord * Size)
         readonly BlockId[] _blocks = new BlockId[BlockCount];
 
+        // Bicim ayri dizide: blok kimligiyle ayni byte'a sikistirmak
+        // (ust 3 bit bicim, alt 5 bit tip) bellek kazandirirdi ama her
+        // okumada maskeleme gerektiriyor ve mesher bunu milyonlarca kez
+        // yapiyor. Ayri dizi daha hizli ve okunakli.
+        readonly BlockShape[] _shapes = new BlockShape[BlockCount];
+
         /// <summary>Mesh'in yeniden uretilmesi gerekiyor mu.</summary>
         public bool Dirty { get; set; } = true;
 
@@ -31,7 +37,19 @@ namespace LastLight.Voxel
         public void Set(int x, int y, int z, BlockId id)
         {
             if (!InBounds(x, y, z)) return;
-            _blocks[Index(x, y, z)] = id;
+            int i = Index(x, y, z);
+            _blocks[i] = id;
+            _shapes[i] = BlockShape.Cube;   // tip degisince bicim sifirlanir
+            Dirty = true;
+        }
+
+        public BlockShape GetShape(int x, int y, int z) =>
+            InBounds(x, y, z) ? _shapes[Index(x, y, z)] : BlockShape.Cube;
+
+        public void SetShape(int x, int y, int z, BlockShape shape)
+        {
+            if (!InBounds(x, y, z)) return;
+            _shapes[Index(x, y, z)] = shape;
             Dirty = true;
         }
 

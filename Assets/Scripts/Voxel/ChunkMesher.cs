@@ -59,6 +59,16 @@ namespace LastLight.Voxel
                 BlockId id = chunk.Get(x, y, z);
                 if (!BlockDatabase.IsSolid(id)) continue;
 
+                // Kup disindaki bicimler ayri uretiliyor: egik yuzeylerde
+                // yuz eleme mantigi hatali bosluk uretiyor.
+                var shape = chunk.GetShape(x, y, z);
+                if (shape != BlockShape.Cube)
+                {
+                    ShapeMesher.AddShape(Verts, Norms, Uvs, Tris,
+                                         new Vector3(x, y, z), id, shape);
+                    continue;
+                }
+
                 for (int d = 0; d < 6; d++)
                 {
                     Vector3Int n = Dirs[d];
@@ -66,11 +76,25 @@ namespace LastLight.Voxel
 
                     // Chunk sinirindaysak komsu chunk'a bakmaliyiz; yoksa sinir
                     // duvarlari iki kez cizilir ve icerisi disaridan gorunur.
-                    BlockId neighbour = Chunk.InBounds(nx, ny, nz)
-                        ? chunk.Get(nx, ny, nz)
-                        : world.GetBlock(origin.x + nx, origin.y + ny, origin.z + nz);
+                    BlockId neighbour;
+                    BlockShape neighbourShape;
 
-                    if (BlockDatabase.IsSolid(neighbour)) continue; // yuz gorunmez, atla
+                    if (Chunk.InBounds(nx, ny, nz))
+                    {
+                        neighbour = chunk.Get(nx, ny, nz);
+                        neighbourShape = chunk.GetShape(nx, ny, nz);
+                    }
+                    else
+                    {
+                        neighbour = world.GetBlock(origin.x + nx, origin.y + ny, origin.z + nz);
+                        neighbourShape = world.GetShape(origin.x + nx, origin.y + ny, origin.z + nz);
+                    }
+
+                    // Yalnizca dolu VE kup komsu yuzu kapatiyor. Rampa veya
+                    // yarim blok komsuysa arkasi gorunur kaliyor; kapatirsak
+                    // egimlerin yaninda delik olusuyor.
+                    if (BlockDatabase.IsSolid(neighbour) && neighbourShape == BlockShape.Cube)
+                        continue;
 
                     AddFace(new Vector3(x, y, z), d, id);
                 }

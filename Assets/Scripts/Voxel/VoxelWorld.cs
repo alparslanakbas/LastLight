@@ -57,6 +57,22 @@ namespace LastLight.Voxel
         // ---------- Dunya koordinatiyla erisim ----------
 
         /// <summary>Dunya koordinatindaki blogu dondurur. Dunya disi = Air.</summary>
+        /// <summary>Dunya koordinatindaki blogun bicimi.</summary>
+        public BlockShape GetShape(int wx, int wy, int wz)
+        {
+            Vector3Int coord = ToChunkCoord(wx, wy, wz);
+            if (!_chunks.TryGetValue(coord, out var chunk)) return BlockShape.Cube;
+            return chunk.GetShape(wx - coord.x * Chunk.Size, wy - coord.y * Chunk.Size, wz - coord.z * Chunk.Size);
+        }
+
+        public void SetShape(int wx, int wy, int wz, BlockShape shape)
+        {
+            Vector3Int coord = ToChunkCoord(wx, wy, wz);
+            if (!_chunks.TryGetValue(coord, out var chunk)) return;
+            chunk.SetShape(wx - coord.x * Chunk.Size, wy - coord.y * Chunk.Size, wz - coord.z * Chunk.Size, shape);
+            _dirty.Add(coord);
+        }
+
         /// <summary>Dunya genisligi (blok). Biyom sorgulari icin disariya acik.</summary>
         public int WorldSizeX => sizeX * Chunk.Size;
         public int WorldSizeZ => sizeZ * Chunk.Size;
@@ -125,6 +141,11 @@ namespace LastLight.Voxel
                 _chunks[coord] = chunk;
                 TerrainGenerator.FillChunk(chunk, worldX, worldZ);
             }
+
+            // Basamak yumusatma araziden sonra, sehirden once: sehir tesviyesi
+            // SetBlock kullaniyor ve bicimi kupe sifirliyor, yani yollar ve
+            // bina temelleri duz kaliyor.
+            TerrainGenerator.SmoothTerrain(this, worldX, worldZ);
 
             // Agaclar arazi bittikten sonra: bir agac chunk sinirini asabiliyor
             // ve o chunk henuz olusmamis olabilir.
