@@ -1,6 +1,7 @@
 using LastLight.Enemies;
 using LastLight.Items;
 using LastLight.Persistence;
+using LastLight.UI;
 using LastLight.Skills;
 using LastLight.World;
 using UnityEngine;
@@ -32,6 +33,9 @@ namespace LastLight.UI
         PlayerSkills _skills;
 
         bool _open;
+
+        /// <summary>Duraklama menusu ESC'yi paylasiyor; kimin cevap verecegine karar vermek icin.</summary>
+        public static bool IsOpen { get; private set; }
         Tab _activeTab = Tab.Crafting;
         int _lastSlotCount = -1;
 
@@ -95,6 +99,10 @@ namespace LastLight.UI
             var kb = Keyboard.current;
             if (kb == null) return;
 
+            // Duraklama acikken Tab'in envanteri acmasi iki kaplamayi ust
+            // uste bindiriyordu; duraklama once geliyor.
+            if (PauseMenuController.IsPaused) return;
+
             if (kb.tabKey.wasPressedThisFrame) Toggle();
             if (_open && kb.escapeKey.wasPressedThisFrame) Toggle();
 
@@ -109,6 +117,7 @@ namespace LastLight.UI
         void Toggle()
         {
             _open = !_open;
+            IsOpen = _open;
             if (_overlay != null) _overlay.EnableInClassList("menu-overlay--open", _open);
             // Menu acikken saat kutusu sekme cubuguyla ust uste biniyordu.
             if (_hud != null) _hud.EnableInClassList("hud--hidden", _open);

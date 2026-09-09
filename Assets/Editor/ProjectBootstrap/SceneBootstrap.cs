@@ -1,4 +1,5 @@
 using System.IO;
+using LastLight.Flow;
 using LastLight.Items;
 using LastLight.Player;
 using LastLight.Skills;
@@ -10,6 +11,8 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UIElements;
 
 namespace ProjectBootstrap
@@ -23,12 +26,15 @@ namespace ProjectBootstrap
     public static class SceneBootstrap
     {
         const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        const string MenuScenePath = "Assets/Scenes/MainMenu.unity";
         const string MaterialDir = "Assets/Materials";
 
         /// <summary>Batchmode girisi - isi bitince Editor'u kapatir.</summary>
         public static void Build()
         {
             BuildScene();
+            BuildMenuScene();
+            RegisterScenes();
             EditorApplication.Exit(0);
         }
 
@@ -41,7 +47,9 @@ namespace ProjectBootstrap
         public static void BuildFromMenu()
         {
             BuildScene();
-            Debug.Log("[SceneBootstrap] Sahne menuden yeniden kuruldu.");
+            BuildMenuScene();
+            RegisterScenes();
+            Debug.Log("[SceneBootstrap] Sahneler menuden yeniden kuruldu.");
         }
 
         static void BuildScene()
@@ -63,6 +71,9 @@ namespace ProjectBootstrap
             var saveGo = GameObject.Find("SaveManager");
             if (saveGo != null) Object.DestroyImmediate(saveGo);
             new GameObject("SaveManager").AddComponent<LastLight.Persistence.GameSaveManager>();
+
+            CreatePauseUI();
+            EnsureEventSystem();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -248,6 +259,117 @@ namespace ProjectBootstrap
             doc.panelSettings = panel;
             doc.visualTreeAsset = uxml;
             go.AddComponent<GameMenuController>();
+        }
+
+        const string ShellDir = UiDir + "/Shell";
+
+        /// <summary>
+        /// Duraklama arayuzu ayri bir UIDocument olarak kuruluyor: ayni belge
+        /// icinde HUD'un kaplama katmaniyla z sirasi yarisiyordu. Daha yuksek
+        /// sortingOrder ile duraklama her zaman ustte.
+        /// </summary>
+        static void CreatePauseUI()
+        {
+            var existing = GameObject.Find("PauseUI");
+            if (existing != null) Object.DestroyImmediate(existing);
+
+            var uxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ShellDir + "/PauseMenu.uxml");
+            if (uxml == null)
+            {
+                Debug.LogError("[SceneBootstrap] PauseMenu.uxml bulunamadi.");
+                return;
+            }
+
+            var go = new GameObject("PauseUI");
+            var doc = go.AddComponent<UIDocument>();
+            doc.panelSettings = LoadPanelSettings();
+            doc.visualTreeAsset = uxml;
+            doc.sortingOrder = 10;
+            go.AddComponent<PauseMenuController>();
+        }
+
+        /// <summary>
+        /// UI Toolkit'te dugme tiklamasi EventSystem olmadan gelmiyor. HUD
+        /// salt bilgi oldugu icin simdiye kadar gerekmemisti.
+        /// </summary>
+        static void EnsureEventSystem()
+        {
+            if (Object.FindAnyObjectByType<EventSystem>() != null) return;
+
+            var go = new GameObject("EventSystem");
+            go.AddComponent<EventSystem>();
+            go.AddComponent<InputSystemUIInputModule>();
+        }
+
+        static PanelSettings LoadPanelSettings()
+        {
+            var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
+            if (panel != null) return panel;
+
+            panel = ScriptableObject.CreateInstance<PanelSettings>();
+            AssetDatabase.CreateAsset(panel, PanelSettingsPath);
+            return panel;
+        }
+
+        // ---------- Ana menu sahnesi ----------
+
+        static void BuildMenuScene()
+        {
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            // Duz siyah bir arka plan menuyu "bitmemis" gosteriyordu. Oyunun
+            // kendi HDRI gokyuzunu yavasca donen bir kamerayla gostermek,
+            // ekstra varlik gerektirmeden menuyu oyuna baglıyor.
+            var camGo = new GameObject("MenuCamera");
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.Skybox;
+            cam.backgroundColor = new Color(0.02f, 0.02f, 0.03f);
+            camGo.transform.rotation = Quaternion.Euler(6f, 0f, 0f);
+            camGo.tag = "MainCamera";
+            camGo.AddComponent<MenuBackdrop>();
+
+            var sky = AssetDatabase.LoadAssetAtPath<Material>(MaterialDir + "/SkyHDRI.mat");
+            if (sky != null)
+            {
+                RenderSettings.skybox = sky;
+                RenderSettings.ambientMode = AmbientMode.Skybox;
+            }
+
+            var uxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ShellDir + "/MainMenu.uxml");
+            if (uxml == null)
+            {
+                Debug.LogError("[SceneBootstrap] MainMenu.uxml bulunamadi.");
+                return;
+            }
+
+            var uiGo = new GameObject("MenuUI");
+            var doc = uiGo.AddComponent<UIDocument>();
+            doc.panelSettings = LoadPanelSettings();
+            doc.visualTreeAsset = uxml;
+            uiGo.AddComponent<MainMenuController>();
+
+            var es = new GameObject("EventSystem");
+            es.AddComponent<EventSystem>();
+            es.AddComponent<InputSystemUIInputModule>();
+
+            EditorSceneManager.SaveScene(scene, MenuScenePath);
+            Debug.Log("[SceneBootstrap] Ana menu sahnesi kuruldu.");
+        }
+
+        /// <summary>
+        /// Build ayarlarina yazilmayan sahne SceneManager.LoadScene ile
+        /// acilmiyor - Editor'de calisirken degil, sadece derlenmis oyunda
+        /// patlayan bir hata oldugu icin kolay gozden kaciyor.
+        /// </summary>
+        static void RegisterScenes()
+        {
+            var wanted = new[] { MenuScenePath, ScenePath };
+            var list = new System.Collections.Generic.List<EditorBuildSettingsScene>();
+
+            foreach (var path in wanted)
+                list.Add(new EditorBuildSettingsScene(path, true));
+
+            EditorBuildSettings.scenes = list.ToArray();
         }
 
         // ---------- Dusmanlar ----------

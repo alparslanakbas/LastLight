@@ -131,9 +131,13 @@ namespace LastLight.World
                     ? Color.Lerp(dayFog, nightFog, t)
                     : Color.Lerp(nightFog, dayFog, t);
 
-                RenderSettings.fogEndDistance = IsNight
+                // Gorus mesafesi ayari sise carpan olarak giriyor: kamera
+                // kirpma duzlemini tek basina degistirmek sisin icinde hicbir
+                // sey degistirmiyor, gorunen mesafeyi belirleyen sis.
+                float viewScale = LastLight.Settings.GameSettings.ViewDistanceScale;
+                RenderSettings.fogEndDistance = viewScale * (IsNight
                     ? Mathf.Lerp(dayFogEnd, nightFogEnd, t)
-                    : Mathf.Lerp(nightFogEnd, dayFogEnd, t);
+                    : Mathf.Lerp(nightFogEnd, dayFogEnd, t));
 
                 // HDRI sabit bir fotograf; gece hissini pozlama ve renk
                 // veriyor. Ayri bir gece HDRI'sine gecmek sert bir kesme

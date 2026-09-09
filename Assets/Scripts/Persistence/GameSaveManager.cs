@@ -1,3 +1,4 @@
+using LastLight.Flow;
 using LastLight.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -35,7 +36,10 @@ namespace LastLight.Persistence
 
         void Start()
         {
-            if (!loadOnStart || !SaveSystem.SaveExists) return;
+            // Ana menude "yeni oyun" secildiyse kayit zaten silindi, ama
+            // bayragi da kontrol ediyoruz: silme basarisiz olsa bile yeni
+            // oyun eski dunyayla baslamasin.
+            if (!loadOnStart || !GameFlow.LoadSaveOnStart || !SaveSystem.SaveExists) return;
 
             if (SaveSystem.Load())
                 ShowStatus("Kayit yuklendi");

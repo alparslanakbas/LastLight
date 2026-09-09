@@ -1,0 +1,31 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="project://database/Assets/UI/Shell/Shell.uss" />
+
+  <ui:VisualElement class="shell-root" picking-mode="Ignore">
+
+    <ui:VisualElement name="pauseVeil" class="shell-veil">
+
+      <ui:VisualElement name="pauseHome">
+        <ui:Label text="DURAKLATILDI" class="shell-heading" />
+
+        <ui:VisualElement class="shell-buttons">
+          <ui:Button name="resumeButton" text="DEVAM ET" class="shell-button shell-button--primary" />
+          <ui:Button name="saveButton" text="KAYDET" class="shell-button" />
+          <ui:Button name="pauseSettings" text="AYARLAR" class="shell-button" />
+          <ui:Button name="toMenuButton" text="ANA MENU" class="shell-button shell-button--danger" />
+        </ui:VisualElement>
+
+        <ui:Label name="pauseStatus" text="" class="shell-status" />
+      </ui:VisualElement>
+
+      <ui:VisualElement name="pauseSettingsPage" class="shell-page">
+        <ui:Label text="AYARLAR" class="shell-heading" />
+        <ui:VisualElement name="pauseSettingsHost" />
+        <ui:VisualElement class="shell-buttons" style="margin-top: 18px;">
+          <ui:Button name="pauseSettingsBack" text="GERI" class="shell-button" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

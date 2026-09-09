@@ -1,4 +1,6 @@
+using LastLight.Settings;
 using LastLight.Skills;
+using LastLight.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -38,17 +40,10 @@ namespace LastLight.Player
         {
             if (Keyboard.current == null || Mouse.current == null) return;
 
-            // Esc ile imleci birak - Editor'de test ederken pencereye hapsolmamak icin.
-            if (Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
-            if (Mouse.current.leftButton.wasPressedThisFrame && Cursor.lockState == CursorLockMode.None)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+            // ESC ve imlec kilidi artik duraklama menusunun isi; burada da
+            // ele alirsak iki sistem ayni tusa tepki verip menuyu ayni karede
+            // acip kapatiyordu.
+            if (PauseMenuController.IsPaused) return;
 
             Look();
             Move();
@@ -58,7 +53,7 @@ namespace LastLight.Player
         {
             if (Cursor.lockState != CursorLockMode.Locked) return;
 
-            Vector2 delta = Mouse.current.delta.ReadValue() * mouseSensitivity;
+            Vector2 delta = Mouse.current.delta.ReadValue() * GameSettings.Sensitivity;
 
             // Yatay donusu govdeye, dikeyi kameraya uyguluyoruz; ikisini tek
             // transform'da toplarsak karakter yana yatiyor.

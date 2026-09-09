@@ -1,0 +1,46 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="project://database/Assets/UI/Shell/Shell.uss" />
+
+  <ui:VisualElement class="shell-root">
+
+    <ui:VisualElement class="shell-veil shell-veil--always">
+
+      <!-- Ana sayfa -->
+      <ui:VisualElement name="homePage">
+        <ui:Label text="LAST LIGHT" class="shell-title" />
+        <ui:Label text="ISIGIN OLDUGU YERDE GUVENDESIN" class="shell-subtitle" />
+
+        <ui:VisualElement class="shell-buttons">
+          <ui:Button name="continueButton" text="DEVAM ET" class="shell-button shell-button--primary" />
+          <ui:Button name="newGameButton" text="YENI OYUN" class="shell-button" />
+          <ui:Button name="settingsButton" text="AYARLAR" class="shell-button" />
+          <ui:Button name="quitButton" text="CIKIS" class="shell-button shell-button--danger" />
+        </ui:VisualElement>
+
+        <ui:Label name="saveInfo" text="" class="shell-status" />
+      </ui:VisualElement>
+
+      <!-- Ayarlar sayfasi -->
+      <ui:VisualElement name="settingsPage" class="shell-page">
+        <ui:Label text="AYARLAR" class="shell-heading" />
+        <ui:VisualElement name="settingsHost" />
+        <ui:VisualElement class="shell-buttons" style="margin-top: 18px;">
+          <ui:Button name="settingsBack" text="GERI" class="shell-button" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+
+      <!-- Yeni oyun onayi: mevcut kaydin ustune yazilacagi icin -->
+      <ui:VisualElement name="confirmPage" class="shell-page">
+        <ui:Label text="MEVCUT KAYIT SILINECEK" class="shell-heading" />
+        <ui:Label name="confirmText" text="" class="settings-hint" style="font-size: 12px; margin-bottom: 18px;" />
+        <ui:VisualElement class="shell-buttons">
+          <ui:Button name="confirmYes" text="SIL VE BASLA" class="shell-button shell-button--danger" />
+          <ui:Button name="confirmNo" text="VAZGEC" class="shell-button" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+
+    </ui:VisualElement>
+
+    <ui:Label name="version" text="" class="shell-footer" />
+  </ui:VisualElement>
+</ui:UXML>
