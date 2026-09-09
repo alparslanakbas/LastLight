@@ -56,6 +56,7 @@ namespace ProjectBootstrap
             CreatePostProcessing();
             EnsureAmbientOcclusion();
             CreateFoliage();
+            CreateSkybox();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -239,6 +240,59 @@ namespace ProjectBootstrap
             doc.panelSettings = panel;
             doc.visualTreeAsset = uxml;
             go.AddComponent<GameMenuController>();
+        }
+
+        // ---------- Gokyuzu ----------
+
+        const string SkyHdriPath = "Assets/Textures/Sky/kloppenheim_06.hdr";
+        const string SkyMaterialPath = MaterialDir + "/SkyHDRI.mat";
+
+        /// <summary>
+        /// HDRI gokyuzu. Unity'nin varsayilan prosedurel skybox'i duz bir
+        /// gradyan; HDRI gercek bir gokyuzu fotografı oldugu icin ufuk,
+        /// bulut ve renk gecisi tek dosyayla geliyor.
+        /// </summary>
+        static void CreateSkybox()
+        {
+            var hdri = AssetDatabase.LoadAssetAtPath<Texture>(SkyHdriPath);
+            if (hdri == null)
+            {
+                Debug.LogWarning("[SceneBootstrap] HDRI bulunamadi: " + SkyHdriPath);
+                return;
+            }
+
+            // Latlong (panoramik) HDRI: 2D doku olarak, tekrarli sarilmali.
+            var imp = AssetImporter.GetAtPath(SkyHdriPath) as TextureImporter;
+            if (imp != null)
+            {
+                imp.textureShape = TextureImporterShape.Texture2D;
+                imp.wrapMode = TextureWrapMode.Repeat;
+                imp.mipmapEnabled = true;
+                imp.SaveAndReimport();
+            }
+
+            var shader = Shader.Find("Skybox/Panoramic");
+            if (shader == null)
+            {
+                Debug.LogWarning("[SceneBootstrap] Skybox/Panoramic shader yok.");
+                return;
+            }
+
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(SkyMaterialPath);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, SkyMaterialPath);
+            }
+
+            mat.shader = shader;
+            mat.SetTexture("_MainTex", hdri);
+            mat.SetFloat("_Exposure", 1.0f);
+            mat.SetFloat("_Rotation", 30f);
+            EditorUtility.SetDirty(mat);
+            AssetDatabase.SaveAssets();
+
+            RenderSettings.skybox = mat;
         }
 
         // ---------- Bitki ortusu ----------

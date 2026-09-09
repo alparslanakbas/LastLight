@@ -48,6 +48,18 @@ namespace ProjectBootstrap
             (BlockId.Leaves, "Grass"),
         };
 
+        /// <summary>
+        /// Blok olmayan ek hucreler: (atlas indeksi, kaynak dosya).
+        /// Agac govdesi ahsap planka dokusunu kullaniyordu ve gri, duzgun
+        /// tahta gibi duruyordu; kabuk icin bos hucrelerden biri ayrildi.
+        /// </summary>
+        public const int BarkTile = 13;
+
+        static readonly (int tile, string file)[] ExtraSources =
+        {
+            (BarkTile, "Bark"),
+        };
+
         [MenuItem("LastLight/Blok Atlasini Kaynaklardan Uret")]
         public static void Build()
         {
@@ -84,6 +96,26 @@ namespace ProjectBootstrap
                 {
                     BlitScaled(nrm, normal, tx, ty, tint: Color.white);
                     Object.DestroyImmediate(nrm);
+                }
+            }
+
+            foreach (var (tile, file) in ExtraSources)
+            {
+                int tx = tile % Tiles, ty = tile / Tiles;
+
+                var extra = LoadSource(file + "_albedo");
+                if (extra != null)
+                {
+                    BlitScaled(extra, albedo, tx, ty, Color.white);
+                    Object.DestroyImmediate(extra);
+                    loaded++;
+                }
+
+                var extraN = LoadSource(file + "_normal");
+                if (extraN != null)
+                {
+                    BlitScaled(extraN, normal, tx, ty, Color.white);
+                    Object.DestroyImmediate(extraN);
                 }
             }
 
@@ -138,7 +170,7 @@ namespace ProjectBootstrap
         static Color BaseTint(BlockId id) => id switch
         {
             BlockId.Snow => new Color(1.15f, 1.18f, 1.22f, 1f),
-            BlockId.Grass => new Color(0.85f, 1.05f, 0.75f, 1f),
+            BlockId.Grass => new Color(0.62f, 1.12f, 0.52f, 1f),   // kaynak havadan cekim, sarimsi
             BlockId.Waste => new Color(1.05f, 0.92f, 0.82f, 1f),
             BlockId.Ash => new Color(0.72f, 0.70f, 0.68f, 1f),
             BlockId.Leaves => new Color(0.55f, 0.85f, 0.45f, 1f),

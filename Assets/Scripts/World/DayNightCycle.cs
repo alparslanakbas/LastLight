@@ -23,9 +23,13 @@ namespace LastLight.World
         [SerializeField] float dayIntensity = 1.1f;
         [SerializeField] float nightIntensity = 0.02f;
 
-        [Header("Ortam rengi")]
-        [SerializeField] Color dayAmbient = new(0.55f, 0.57f, 0.60f);
-        [SerializeField] Color nightAmbient = new(0.025f, 0.03f, 0.05f);
+        [Header("Ortam isigi")]
+        [SerializeField] float dayAmbientIntensity = 1.0f;
+        [SerializeField] float nightAmbientIntensity = 0.06f;
+
+        [Header("Gokyuzu")]
+        [SerializeField] float dayExposure = 1.0f;
+        [SerializeField] float nightExposure = 0.12f;
 
         [Header("Sis")]
         [SerializeField] Color dayFog = new(0.62f, 0.70f, 0.80f);
@@ -52,7 +56,10 @@ namespace LastLight.World
         {
             Instance = this;
             if (sun == null) sun = FindAnyObjectByType<Light>();
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            // Ortam isigi HDRI'den geliyor: duz renk ambient'te gunes almayan
+            // blok yuzleri simsiyah kaliyordu. Gokyuzunden gelen isik golgeleri
+            // gokyuzu rengine boyuyor - gercek disari aydinlatmasi boyle.
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Skybox;
 
             // Mesafe sisi derinlik algisini uretiyor: sissiz bir voxel dunyada
             // uzak bloklar yakinlarla ayni netlikte kaliyor ve sahne duz
@@ -109,17 +116,16 @@ namespace LastLight.World
                     ? new Color(0.35f, 0.42f, 0.62f)   // solgun ay isigi
                     : new Color(1f, 0.95f, 0.85f);
 
-                Color ambient = IsNight
-                    ? Color.Lerp(dayAmbient, nightAmbient, t)
-                    : Color.Lerp(nightAmbient, dayAmbient, t);
+                float ambient = IsNight
+                    ? Mathf.Lerp(dayAmbientIntensity, nightAmbientIntensity, t)
+                    : Mathf.Lerp(nightAmbientIntensity, dayAmbientIntensity, t);
 
                 // "Gece Gozu" karanligi tamamen kaldirmiyor, sadece siyahi
                 // biraz aciyor - kaldirsaydi merkez mekanik ise yaramaz olurdu.
                 float bonus = PlayerSkills.Instance?.State.NightAmbientBonus ?? 0f;
-                if (IsNight && bonus > 0f)
-                    ambient += new Color(bonus, bonus, bonus * 1.2f);
+                if (IsNight && bonus > 0f) ambient += bonus * 3f;
 
-                RenderSettings.ambientLight = ambient;
+                RenderSettings.ambientIntensity = ambient;
 
                 RenderSettings.fogColor = IsNight
                     ? Color.Lerp(dayFog, nightFog, t)
@@ -128,6 +134,22 @@ namespace LastLight.World
                 RenderSettings.fogEndDistance = IsNight
                     ? Mathf.Lerp(dayFogEnd, nightFogEnd, t)
                     : Mathf.Lerp(nightFogEnd, dayFogEnd, t);
+
+                // HDRI sabit bir fotograf; gece hissini pozlama ve renk
+                // veriyor. Ayri bir gece HDRI'sine gecmek sert bir kesme
+                // uretiyordu, pozlama yumusak geciyor.
+                if (RenderSettings.skybox != null && RenderSettings.skybox.HasProperty("_Exposure"))
+                {
+                    float exposure = IsNight
+                        ? Mathf.Lerp(dayExposure, nightExposure, t)
+                        : Mathf.Lerp(nightExposure, dayExposure, t);
+                    RenderSettings.skybox.SetFloat("_Exposure", exposure);
+
+                    // Gokyuzu gun icinde yavasca donuyor: sabit HDRI'de
+                    // gunes hep ayni yerde duruyor ve zaman gecmiyor gibi.
+                    float rot = (DayNumber * 40f + PhaseProgress * 60f) % 360f;
+                    RenderSettings.skybox.SetFloat("_Rotation", rot);
+                }
             }
         }
 
