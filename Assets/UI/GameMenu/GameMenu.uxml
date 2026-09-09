@@ -65,6 +65,7 @@
       </ui:VisualElement>
       <ui:Label name="healthLabel" text="100 / 100" class="bar-label" />
       <ui:Label name="threatLabel" text="" class="threat-label" />
+      <ui:Label name="saveStatus" text="" class="save-status" />
     </ui:VisualElement>
 
     <ui:VisualElement name="hotbar" class="hotbar" />

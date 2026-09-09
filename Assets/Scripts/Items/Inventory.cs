@@ -91,6 +91,21 @@ namespace LastLight.Items
             return true;
         }
 
+        /// <summary>Kayittan yukleme icin: tum slotlari bosaltir.</summary>
+        public void Clear()
+        {
+            for (int i = 0; i < _slots.Length; i++) _slots[i] = ItemStack.Empty;
+            Changed?.Invoke();
+        }
+
+        /// <summary>Kayittan yukleme icin: belirli slota dogrudan yazar.</summary>
+        public void SetSlot(int index, ItemId id, int count)
+        {
+            if (index < 0 || index >= _slots.Length) return;
+            _slots[index] = new ItemStack(id, count);
+            Changed?.Invoke();
+        }
+
         /// <summary>Envanterin herhangi bir yerinden toplam sayar.</summary>
         public int CountOf(ItemId id)
         {

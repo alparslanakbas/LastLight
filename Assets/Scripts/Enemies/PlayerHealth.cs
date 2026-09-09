@@ -56,6 +56,13 @@ namespace LastLight.Enemies
             }
         }
 
+        /// <summary>Kayittan yukleme icin: dogrudan deger atar.</summary>
+        public void SetHealth(float value)
+        {
+            Current = Mathf.Clamp(value, 0f, maxHealth);
+            IsDead = false;
+        }
+
         public void Heal(float amount)
         {
             if (IsDead) return;

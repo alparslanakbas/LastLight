@@ -403,6 +403,13 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
 }
 
+.save-status {
+  color: var(--accent);
+  font-size: 11px;
+  margin-top: 4px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+}
+
 /* ---------- Hotbar ---------- */
 
 .hotbar {

@@ -153,6 +153,20 @@ namespace LastLight.World
             }
         }
 
+        /// <summary>Kayittan yukleme icin dongu durumunu geri yukler.</summary>
+        public void RestoreState(int day, int nights, bool night, float phase)
+        {
+            DayNumber = day;
+            NightsSurvived = nights;
+            IsNight = night;
+            PhaseProgress = Mathf.Clamp01(phase);
+
+            float duration = IsNight ? nightDuration : dayDuration;
+            _timer = PhaseProgress * duration;
+
+            Apply();
+        }
+
         /// <summary>HUD icin okunabilir saat.</summary>
         public string ClockText()
         {

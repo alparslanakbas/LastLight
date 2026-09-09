@@ -57,6 +57,25 @@ namespace LastLight.Voxel
         // ---------- Dunya koordinatiyla erisim ----------
 
         /// <summary>Dunya koordinatindaki blogu dondurur. Dunya disi = Air.</summary>
+        /// <summary>Kayit sistemi icin chunk koleksiyonu.</summary>
+        public IReadOnlyDictionary<Vector3Int, Chunk> Chunks => _chunks;
+
+        /// <summary>Kayittan yuklenen chunk'lari yerlestirir ve mesh'i yeniler.</summary>
+        public void ApplyLoadedChunk(Vector3Int coord, BlockId[] blocks, BlockShape[] shapes)
+        {
+            if (!_chunks.TryGetValue(coord, out var chunk))
+            {
+                chunk = new Chunk(coord);
+                _chunks[coord] = chunk;
+            }
+
+            chunk.LoadRaw(blocks, shapes);
+            _dirty.Add(coord);
+        }
+
+        /// <summary>Yukleme oncesi: dunya uretimini atlamak icin isaretler.</summary>
+        public void MarkGenerated() => _generated = true;
+
         /// <summary>Dunya koordinatindaki blogun bicimi.</summary>
         public BlockShape GetShape(int wx, int wy, int wz)
         {

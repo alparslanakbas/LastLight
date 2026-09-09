@@ -62,6 +62,13 @@ namespace LastLight.World
             return pl;
         }
 
+        /// <summary>Kayittan yukleme icin kalan yakiti ayarlar.</summary>
+        public void SetFuelRatio(float ratio)
+        {
+            float bonus = LastLight.Skills.PlayerSkills.Instance?.State.FuelDurationMultiplier ?? 1f;
+            _fuel = Mathf.Clamp01(ratio) * TorchFuel * bonus;
+        }
+
         void Update()
         {
             _fuel -= Time.deltaTime * _drainRate;

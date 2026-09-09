@@ -56,6 +56,17 @@ namespace LastLight.Voxel
         /// <summary>Mesher'in dogrudan okumasi icin - kopyalama maliyetinden kacinir.</summary>
         public BlockId[] Raw => _blocks;
 
+        /// <summary>Kayit/yukleme icin ham bicim dizisi.</summary>
+        public BlockShape[] RawShapes => _shapes;
+
+        /// <summary>Yuklemede tum chunk'i tek seferde yazar.</summary>
+        public void LoadRaw(BlockId[] blocks, BlockShape[] shapes)
+        {
+            System.Array.Copy(blocks, _blocks, BlockCount);
+            System.Array.Copy(shapes, _shapes, BlockCount);
+            Dirty = true;
+        }
+
         public Vector3Int WorldOrigin => Coord * Size;
     }
 }

@@ -1,5 +1,6 @@
 using LastLight.Enemies;
 using LastLight.Items;
+using LastLight.Persistence;
 using LastLight.Skills;
 using LastLight.World;
 using UnityEngine;
@@ -21,7 +22,7 @@ namespace LastLight.UI
         VisualElement _overlay, _grid, _hotbar, _hud;
         ScrollView _leftList, _detailList;
         Label _clockLabel, _phaseLabel, _slotCountLabel;
-        Label _healthLabel, _threatLabel;
+        Label _healthLabel, _threatLabel, _saveStatus;
         VisualElement _healthFill;
         Label _menuTitle, _leftTitle, _leftBadge, _leftNote, _detailTitle;
 
@@ -50,6 +51,7 @@ namespace LastLight.UI
             _healthFill = root.Q<VisualElement>("healthFill");
             _healthLabel = root.Q<Label>("healthLabel");
             _threatLabel = root.Q<Label>("threatLabel");
+            _saveStatus = root.Q<Label>("saveStatus");
 
             _clockLabel = root.Q<Label>("clockLabel");
             _phaseLabel = root.Q<Label>("phaseLabel");
@@ -421,6 +423,9 @@ namespace LastLight.UI
             // altinda oldugunu gormesi gerekiyor.
             if (_threatLabel != null)
                 _threatLabel.text = Enemy.AliveCount > 0 ? "TEHDIT: " + Enemy.AliveCount : "";
+
+            if (_saveStatus != null)
+                _saveStatus.text = GameSaveManager.StatusMessage;
         }
 
         // ---------- Envanter ----------

@@ -59,6 +59,11 @@ namespace ProjectBootstrap
             CreateSkybox();
             CreateEnemySystem();
 
+            // Kayit yoneticisi: kaydetmesi olmayan oyun urun degil prototip.
+            var saveGo = GameObject.Find("SaveManager");
+            if (saveGo != null) Object.DestroyImmediate(saveGo);
+            new GameObject("SaveManager").AddComponent<LastLight.Persistence.GameSaveManager>();
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();

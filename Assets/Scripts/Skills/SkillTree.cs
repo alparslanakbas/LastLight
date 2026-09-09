@@ -94,6 +94,20 @@ namespace LastLight.Skills
             return true;
         }
 
+        /// <summary>
+        /// Kayittan yukleme icin: puan kontrolu yapmadan acar. Normal Unlock
+        /// puan dusuyor; yuklemede puanlar zaten gecilen geceden hesaplaniyor.
+        /// </summary>
+        public void ForceUnlock(PerkId id)
+        {
+            if (_unlocked.Contains(id)) return;
+            var def = PerkDatabase.Get(id);
+            if (def.Id == PerkId.None) return;
+
+            _unlocked.Add(id);
+            SpentPoints += def.Cost;
+        }
+
         // ---------- Sistemlerin sordugu carpanlar ----------
 
         public float SprintMultiplier => Has(PerkId.HizliAyak) ? 1.15f : 1f;

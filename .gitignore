@@ -111,3 +111,6 @@ InitTestScene*.unity*
 # Indirilen kaynak dokular - depoyu sismesin, gerektiginde yeniden indirilir
 /[Aa]ssets/Textures/Source/
 /[Aa]ssets/Textures/Source.meta
+
+# Visual Studio bilesen listesi - Unity uretiyor, projeye ait degil
+.vsconfig
