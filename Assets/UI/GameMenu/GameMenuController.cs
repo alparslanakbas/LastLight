@@ -1,3 +1,4 @@
+using LastLight.Enemies;
 using LastLight.Items;
 using LastLight.Skills;
 using LastLight.World;
@@ -20,6 +21,8 @@ namespace LastLight.UI
         VisualElement _overlay, _grid, _hotbar, _hud;
         ScrollView _leftList, _detailList;
         Label _clockLabel, _phaseLabel, _slotCountLabel;
+        Label _healthLabel, _threatLabel;
+        VisualElement _healthFill;
         Label _menuTitle, _leftTitle, _leftBadge, _leftNote, _detailTitle;
 
         readonly Button[] _tabButtons = new Button[7];
@@ -43,6 +46,10 @@ namespace LastLight.UI
 
             _leftList = root.Q<ScrollView>("leftList");
             _detailList = root.Q<ScrollView>("detailList");
+
+            _healthFill = root.Q<VisualElement>("healthFill");
+            _healthLabel = root.Q<Label>("healthLabel");
+            _threatLabel = root.Q<Label>("threatLabel");
 
             _clockLabel = root.Q<Label>("clockLabel");
             _phaseLabel = root.Q<Label>("phaseLabel");
@@ -90,6 +97,7 @@ namespace LastLight.UI
             if (_open && kb.escapeKey.wasPressedThisFrame) Toggle();
 
             UpdateClock();
+            UpdateVitals();
 
             // Kapasite perk'le buyuyebiliyor; slot sayisi degisirse grid yeniden kurulur.
             if (_open && _inventory != null && _inventory.Inventory.SlotCount != _lastSlotCount)
@@ -397,6 +405,22 @@ namespace LastLight.UI
             var l = new Label(text);
             l.AddToClassList("empty-note");
             _leftList.Add(l);
+        }
+
+        void UpdateVitals()
+        {
+            var hp = PlayerHealth.Instance;
+            if (hp != null && _healthFill != null)
+            {
+                float ratio = hp.Max > 0f ? hp.Current / hp.Max : 0f;
+                _healthFill.style.width = Length.Percent(ratio * 100f);
+                _healthLabel.text = Mathf.CeilToInt(hp.Current) + " / " + Mathf.CeilToInt(hp.Max);
+            }
+
+            // Yakinlardaki dusman sayisi: oyuncunun gece ne kadar baski
+            // altinda oldugunu gormesi gerekiyor.
+            if (_threatLabel != null)
+                _threatLabel.text = Enemy.AliveCount > 0 ? "TEHDIT: " + Enemy.AliveCount : "";
         }
 
         // ---------- Envanter ----------

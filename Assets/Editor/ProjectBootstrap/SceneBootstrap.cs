@@ -57,6 +57,7 @@ namespace ProjectBootstrap
             EnsureAmbientOcclusion();
             CreateFoliage();
             CreateSkybox();
+            CreateEnemySystem();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -184,6 +185,8 @@ namespace ProjectBootstrap
 
             // Envanter blok etkilesiminden ONCE ekleniyor: etkilesim bilesenine
             // referans olarak veriliyor.
+            player.AddComponent<LastLight.Enemies.PlayerHealth>();
+
             var inv = player.AddComponent<PlayerInventory>();
 
             player.AddComponent<PlayerSkills>();
@@ -240,6 +243,41 @@ namespace ProjectBootstrap
             doc.panelSettings = panel;
             doc.visualTreeAsset = uxml;
             go.AddComponent<GameMenuController>();
+        }
+
+        // ---------- Dusmanlar ----------
+
+        static void CreateEnemySystem()
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) return;
+
+            const string matPath = MaterialDir + "/Enemy.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, matPath);
+            }
+
+            // Neredeyse siyah ve tamamen mat: dusmanlar bir siluet olarak
+            // okunmali. Parlaklik verirsek karanlikta yansiyip yerlerini
+            // belli ediyorlar, oysa gorunmemeleri tehdidin bir parcasi.
+            mat.shader = shader;
+            mat.SetColor("_BaseColor", new Color(0.055f, 0.05f, 0.065f));
+            mat.SetFloat("_Smoothness", 0f);
+            mat.enableInstancing = true;
+            EditorUtility.SetDirty(mat);
+            AssetDatabase.SaveAssets();
+
+            var existing = GameObject.Find("EnemySpawner");
+            if (existing != null) Object.DestroyImmediate(existing);
+
+            var go = new GameObject("EnemySpawner");
+            var spawner = go.AddComponent<LastLight.Enemies.EnemySpawner>();
+            var so = new SerializedObject(spawner);
+            so.FindProperty("enemyMaterial").objectReferenceValue = mat;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // ---------- Gokyuzu ----------

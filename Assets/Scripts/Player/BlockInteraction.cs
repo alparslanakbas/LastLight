@@ -1,3 +1,4 @@
+using LastLight.Enemies;
 using LastLight.Items;
 using LastLight.Skills;
 using LastLight.Voxel;
@@ -41,6 +42,11 @@ namespace LastLight.Player
 
             if (Mouse.current.leftButton.wasPressedThisFrame)
             {
+                // Once dusman: nisan alinan yerde dusman varsa blok yerine
+                // ona vuruluyor. Tersi olsaydi dusmanin onundeki duvari
+                // kirarken dusmani hic vuramazdik.
+                if (TryHitEnemy()) return;
+
                 BlockId broken = world.GetBlock(_targetBlock.x, _targetBlock.y, _targetBlock.z);
                 world.SetBlock(_targetBlock.x, _targetBlock.y, _targetBlock.z, BlockId.Air);
 
@@ -92,6 +98,21 @@ namespace LastLight.Player
             float scroll = Mouse.current.scroll.ReadValue().y;
             if (Mathf.Abs(scroll) > 0.01f && inventory != null)
                 inventory.Inventory.ScrollSelection(scroll > 0 ? 1 : -1);
+        }
+
+        /// <summary>Nisan dogrultusunda dusman varsa hasar verir.</summary>
+        bool TryHitEnemy()
+        {
+            if (cameraPivot == null) return false;
+
+            var ray = new Ray(cameraPivot.position, cameraPivot.forward);
+            if (!Physics.Raycast(ray, out RaycastHit hit, reach)) return false;
+
+            var enemy = hit.collider.GetComponentInParent<Enemy>();
+            if (enemy == null) return false;
+
+            enemy.TakeDamage(25f);
+            return true;
         }
 
         void UpdateTarget()

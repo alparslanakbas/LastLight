@@ -363,6 +363,46 @@
   color: var(--bad);
 }
 
+/* ---------- Can ve tehdit ---------- */
+
+.vitals {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  width: 210px;
+}
+
+.bar-track {
+  height: 16px;
+  background-color: rgba(0, 0, 0, 0.62);
+  border-width: 1px;
+  border-color: var(--border-soft);
+}
+
+.bar-fill {
+  height: 100%;
+  width: 100%;
+}
+
+.bar-fill--health {
+  background-color: rgb(178, 62, 58);
+}
+
+.bar-label {
+  color: var(--text);
+  font-size: 11px;
+  margin-top: 3px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+}
+
+.threat-label {
+  color: var(--bad);
+  font-size: 12px;
+  -unity-font-style: bold;
+  margin-top: 2px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+}
+
 /* ---------- Hotbar ---------- */
 
 .hotbar {
