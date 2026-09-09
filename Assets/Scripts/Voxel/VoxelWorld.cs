@@ -28,8 +28,21 @@ namespace LastLight.Voxel
         // taramak kucuk dunyada ucuz ama dunya buyudukce bosa maliyet.
         readonly HashSet<Vector3Int> _dirty = new();
 
-        void Start()
+        bool _generated;
+
+        void Start() => EnsureGenerated();
+
+        /// <summary>
+        /// Dunyayi bir kez uretir. Baska bilesenler (ornegin bitki ortusu)
+        /// dunyanin hazir olmasina ihtiyac duyuyor ama Start sirasi garanti
+        /// degil; kare beklemek de coz+m degil cunku Editor arka plandayken
+        /// kare uretilmiyor. Talep uzerine uretim ikisini de asiyor.
+        /// </summary>
+        public void EnsureGenerated()
         {
+            if (_generated) return;
+            _generated = true;
+
             GenerateWorld();
 
             foreach (var coord in _chunks.Keys) _dirty.Add(coord);

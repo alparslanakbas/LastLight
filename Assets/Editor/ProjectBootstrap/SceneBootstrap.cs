@@ -55,6 +55,7 @@ namespace ProjectBootstrap
             CreateUI();
             CreatePostProcessing();
             EnsureAmbientOcclusion();
+            CreateFoliage();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -220,6 +221,58 @@ namespace ProjectBootstrap
             doc.panelSettings = panel;
             doc.visualTreeAsset = uxml;
             go.AddComponent<GameMenuController>();
+        }
+
+        // ---------- Bitki ortusu ----------
+
+        static void CreateFoliage()
+        {
+            const string grassTex = "Assets/Textures/GrassBlade.png";
+            if (AssetDatabase.LoadAssetAtPath<Texture2D>(grassTex) == null)
+                TextureAtlasGenerator.GenerateGrassBlade();
+
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(grassTex);
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null || tex == null) return;
+
+            const string matPath = MaterialDir + "/Foliage.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, matPath);
+            }
+
+            mat.shader = shader;
+            mat.SetTexture("_BaseMap", tex);
+            mat.SetColor("_BaseColor", Color.white);
+            mat.SetFloat("_Smoothness", 0.05f);
+
+            // Alfa kesme (seffaflik degil): bitki ortusunde siralama sorunu
+            // cikarmiyor ve golge dokebiliyor. Seffaf modda binlerce kopya
+            // birbirinin uzerine yanlis sirayla ciziliyor.
+            mat.SetFloat("_AlphaClip", 1f);
+            mat.SetFloat("_Cutoff", 0.4f);
+            mat.EnableKeyword("_ALPHATEST_ON");
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+
+            // Iki tarafli: cim yaprağı arkadan da gorunmeli.
+            mat.SetFloat("_Cull", 0f);
+
+            // DrawMeshInstanced bunu gerektiriyor.
+            mat.enableInstancing = true;
+
+            EditorUtility.SetDirty(mat);
+            AssetDatabase.SaveAssets();
+
+            var existing = GameObject.Find("Foliage");
+            if (existing != null) Object.DestroyImmediate(existing);
+
+            var go = new GameObject("Foliage");
+            var scatter = go.AddComponent<LastLight.World.FoliageScatter>();
+            var so = new SerializedObject(scatter);
+            so.FindProperty("foliageMaterial").objectReferenceValue = mat;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // ---------- Gorsel islem ----------

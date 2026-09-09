@@ -60,6 +60,74 @@ namespace ProjectBootstrap
             Debug.Log("[Atlas] Blok dokulari uretildi: " + AtlasPath);
         }
 
+        const string GrassPath = "Assets/Textures/GrassBlade.png";
+
+        /// <summary>
+        /// Bitki ortusu icin alfa kanalli cim dokusu. Gercek bir doku
+        /// geldiginde bu dosyanin uzerine yazilir - sistem doku kaynagini
+        /// bilmiyor, sadece bu yolu okuyor.
+        /// </summary>
+        [MenuItem("LastLight/Cim Dokusu Uret")]
+        public static void GenerateGrassBlade()
+        {
+            const int W = 48, H = 48;
+            var tex = new Texture2D(W, H, TextureFormat.RGBA32, false);
+            var rng = new System.Random(99);
+
+            // Once tamamen seffaf
+            var clear = new Color[W * H];
+            for (int i = 0; i < clear.Length; i++) clear[i] = new Color(0, 0, 0, 0);
+            tex.SetPixels(clear);
+
+            // Birkac dikey cim teli: alttan kalin, yukari dogru incelen ve
+            // hafif egilen seritler.
+            int blades = 9;
+            for (int b = 0; b < blades; b++)
+            {
+                float baseX = 3f + (float)rng.NextDouble() * (W - 6f);
+                float lean = ((float)rng.NextDouble() - 0.5f) * 9f;
+                int height = (int)(H * (0.45f + rng.NextDouble() * 0.5f));
+                float thick = 1.6f + (float)rng.NextDouble() * 1.4f;
+
+                // Tabanda koyu, ucta acik yesil - dogal derinlik
+                Color tip = new Color(0.44f + (float)rng.NextDouble() * 0.12f, 0.68f, 0.26f, 1f);
+                Color root = new Color(0.16f, 0.32f, 0.13f, 1f);
+
+                for (int y = 0; y < height; y++)
+                {
+                    float t = y / (float)height;
+                    float x = baseX + lean * t * t;
+                    float w = Mathf.Lerp(thick, 0.4f, t);
+                    Color c = Color.Lerp(root, tip, t);
+
+                    for (int dx = -Mathf.CeilToInt(w); dx <= Mathf.CeilToInt(w); dx++)
+                    {
+                        int px = Mathf.RoundToInt(x) + dx;
+                        if (px < 0 || px >= W) continue;
+                        float edge = 1f - Mathf.Abs(dx) / (w + 0.5f);
+                        if (edge <= 0f) continue;
+                        tex.SetPixel(px, y, new Color(c.r, c.g, c.b, Mathf.Clamp01(edge * 1.6f)));
+                    }
+                }
+            }
+
+            tex.Apply();
+            var dir = Path.GetDirectoryName(GrassPath);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            File.WriteAllBytes(GrassPath, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+
+            AssetDatabase.ImportAsset(GrassPath, ImportAssetOptions.ForceUpdate);
+            var imp = (TextureImporter)AssetImporter.GetAtPath(GrassPath);
+            imp.alphaIsTransparency = true;
+            imp.filterMode = FilterMode.Bilinear;   // cim kenarlari yumusak olsun
+            imp.wrapMode = TextureWrapMode.Clamp;
+            imp.textureCompression = TextureImporterCompression.Uncompressed;
+            imp.SaveAndReimport();
+
+            Debug.Log("[Atlas] Cim dokusu uretildi: " + GrassPath);
+        }
+
         static Color[] MakeTile(BlockId id, int seed)
         {
             var px = new Color[TileSize * TileSize];
