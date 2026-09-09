@@ -20,13 +20,16 @@ namespace LastLight.World
         const int BatchSize = 1023;   // DrawMeshInstanced'in tek cagrida sinirı
 
         [Header("Yogunluk")]
-        [SerializeField, Range(0f, 1f)] float grassDensity = 0.55f;
-        [SerializeField] float maxDistance = 90f;     // bu mesafeden oteye cizilmiyor
+        [SerializeField, Range(0f, 1f)] float grassDensity = 0.85f;
+        [SerializeField] float maxDistance = 120f;     // bu mesafeden oteye cizilmiyor
 
         [Header("Gorunum")]
         [SerializeField] Material foliageMaterial;
-        [SerializeField] float minScale = 0.7f;
-        [SerializeField] float maxScale = 1.35f;
+        // Once cok kucuktu, sonra asiriya kacti: 1-2 metrelik cim kameranin
+        // icinde kaliyordu. Bir blok 1 metre oldugu icin cim yarim metrenin
+        // altinda kalmali.
+        [SerializeField] float minScale = 0.30f;
+        [SerializeField] float maxScale = 0.62f;
 
         VoxelWorld _world;
         Mesh _grassMesh;
@@ -107,8 +110,19 @@ namespace LastLight.World
                 float scale = Mathf.Lerp(minScale, maxScale, (float)rng.NextDouble());
                 float yaw = (float)rng.NextDouble() * 360f;
 
-                var pos = new Vector3(x + ox, y + 1f, z + oz);
-                _instances.Add(Matrix4x4.TRS(pos, Quaternion.Euler(0f, yaw, 0f), Vector3.one * scale));
+                // Tek nokta yerine kucuk kume: tek tek dagilmis bitkiler
+                // izgara gibi duruyordu, kume dogal gorunuyor.
+                int clump = 1 + rng.Next(3);
+                for (int c = 0; c < clump; c++)
+                {
+                    float jx = c == 0 ? 0f : ((float)rng.NextDouble() - 0.5f) * 0.9f;
+                    float jz = c == 0 ? 0f : ((float)rng.NextDouble() - 0.5f) * 0.9f;
+                    float s2 = scale * (0.75f + (float)rng.NextDouble() * 0.5f);
+                    float y2 = yaw + c * 47f;
+
+                    var pos = new Vector3(x + ox + jx, y + 1f, z + oz + jz);
+                    _instances.Add(Matrix4x4.TRS(pos, Quaternion.Euler(0f, y2, 0f), Vector3.one * s2));
+                }
             }
 
             Debug.Log("[Foliage] " + _instances.Count + " bitki serpistirildi.");

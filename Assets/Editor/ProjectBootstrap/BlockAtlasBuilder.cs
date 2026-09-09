@@ -18,7 +18,9 @@ namespace ProjectBootstrap
     /// </summary>
     public static class BlockAtlasBuilder
     {
-        const int Tile = 256;              // hucre basina piksel
+        // 256'da bir metrelik blok yakindan bulanik kaliyordu; 512 kaynak
+        // dokunun (1K) yarisi, kayip az ve detay yakin planda duruyor.
+        const int Tile = 512;              // hucre basina piksel
         const int Tiles = 4;               // 4x4 = 16 hucre
         const int AtlasSize = Tile * Tiles;
 
@@ -167,7 +169,7 @@ namespace ProjectBootstrap
             imp.filterMode = FilterMode.Bilinear;
             imp.mipmapEnabled = true;
             imp.wrapMode = TextureWrapMode.Clamp;
-            imp.maxTextureSize = 2048;
+            imp.maxTextureSize = 4096;
             imp.SaveAndReimport();
         }
     }

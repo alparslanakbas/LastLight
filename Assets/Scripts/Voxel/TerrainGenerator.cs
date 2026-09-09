@@ -55,6 +55,12 @@ namespace LastLight.Voxel
         /// </summary>
         public static void PlantTrees(VoxelWorld world, int worldX, int worldZ, int seed)
         {
+            // Agaclar artik mesh olarak serpistiriliyor (TreeScatter): bloktan
+            // yapilan bir agacin silueti okunmuyordu. Blok agac uretimi
+            // asagida duruyor ama cagrilmiyor - dunyaya agac blogu koymak
+            // istersek tek satir silmek yetiyor.
+            return;
+#pragma warning disable CS0162
             var rng = new System.Random(seed ^ 0x5eed);
 
             for (int x = 2; x < worldX - 2; x++)
@@ -72,6 +78,7 @@ namespace LastLight.Voxel
                 bool bare = biome == BiomeType.BurntForest || biome == BiomeType.Wasteland;
                 PlantPine(world, x, groundY, z, rng, def, bare);
             }
+#pragma warning restore CS0162
         }
 
         /// <summary>Cam agaci: govde + daralan yaprak katmanlari. Olu biyomlarda yapraksiz.</summary>

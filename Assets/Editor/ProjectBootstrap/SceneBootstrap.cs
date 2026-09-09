@@ -102,6 +102,10 @@ namespace ProjectBootstrap
             mat.SetColor("_BaseColor", Color.white);
             mat.SetFloat("_Smoothness", 0.04f);   // voxel yuzeyler mat olmali
 
+            // Agaclar bu malzemeyi DrawMeshInstanced ile kullaniyor; instancing
+            // kapaliyken cizim InvalidOperationException atiyor.
+            mat.enableInstancing = true;
+
             // Normal haritasi duz yuzeyde catlak ve kabartma hissi uretiyor;
             // dokusuz halden sonraki en buyuk gorsel fark bundan geliyor.
             if (atlasNormal != null)
@@ -287,6 +291,14 @@ namespace ProjectBootstrap
             var so = new SerializedObject(scatter);
             so.FindProperty("foliageMaterial").objectReferenceValue = mat;
             so.ApplyModifiedPropertiesWithoutUndo();
+
+            // Agaclar blok atlasini kullaniyor: govde ahsap, yapraklar yaprak
+            // hucresinden okuyor, ayri malzeme gerekmiyor.
+            var blockMat = AssetDatabase.LoadAssetAtPath<Material>(MaterialDir + "/BlockAtlas.mat");
+            var trees = go.AddComponent<LastLight.World.TreeScatter>();
+            var sot = new SerializedObject(trees);
+            sot.FindProperty("treeMaterial").objectReferenceValue = blockMat;
+            sot.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // ---------- Gorsel islem ----------
