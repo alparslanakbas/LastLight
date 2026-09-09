@@ -110,9 +110,10 @@ namespace LastLight.Voxel
             float tx = (tile % AtlasTiles) * cell;
             float ty = (tile / AtlasTiles) * cell;
 
-            // Kucuk ic pay: tam kenardan orneklersek komsu hucrenin pikselleri
-            // sizip blok kenarlarinda yabanci renk cizgileri olusuyor.
-            const float pad = 0.002f;
+            // Ic pay: tam kenardan orneklersek komsu hucrenin pikselleri sizip
+            // blok kenarlarinda yabanci renk cizgileri olusuyor. Mipmap acik
+            // oldugu icin uzak mesafede sizinti artiyor, bu yuzden pay genis.
+            const float pad = 0.006f;
             float u0 = tx + pad, u1 = tx + cell - pad;
             float v0 = ty + pad, v1 = ty + cell - pad;
 

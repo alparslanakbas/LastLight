@@ -70,13 +70,18 @@ namespace ProjectBootstrap
         {
             if (!Directory.Exists(MaterialDir)) Directory.CreateDirectory(MaterialDir);
 
-            // Dokular yoksa once uretiyoruz - sahne kurulumu tek komutla
-            // bastan sona calissin diye.
+            // Atlasi indirilen gercek dokulardan uretiyoruz. Kaynak klasoru
+            // yoksa prosedurel uretece dusuyoruz ki kurulum yine de tamamlansin.
             const string atlasPath = "Assets/Textures/BlockAtlas.png";
-            if (AssetDatabase.LoadAssetAtPath<Texture2D>(atlasPath) == null)
+            const string normalPath = "Assets/Textures/BlockAtlasNormal.png";
+
+            if (Directory.Exists("Assets/Textures/Source"))
+                BlockAtlasBuilder.Build();
+            else if (AssetDatabase.LoadAssetAtPath<Texture2D>(atlasPath) == null)
                 TextureAtlasGenerator.Generate();
 
             var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(atlasPath);
+            var atlasNormal = AssetDatabase.LoadAssetAtPath<Texture2D>(normalPath);
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null)
             {
@@ -96,6 +101,15 @@ namespace ProjectBootstrap
             mat.SetTexture("_BaseMap", atlas);
             mat.SetColor("_BaseColor", Color.white);
             mat.SetFloat("_Smoothness", 0.04f);   // voxel yuzeyler mat olmali
+
+            // Normal haritasi duz yuzeyde catlak ve kabartma hissi uretiyor;
+            // dokusuz halden sonraki en buyuk gorsel fark bundan geliyor.
+            if (atlasNormal != null)
+            {
+                mat.SetTexture("_BumpMap", atlasNormal);
+                mat.SetFloat("_BumpScale", 1.1f);
+                mat.EnableKeyword("_NORMALMAP");
+            }
             EditorUtility.SetDirty(mat);
             AssetDatabase.SaveAssets();
             return mat;
