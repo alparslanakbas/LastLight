@@ -61,6 +61,16 @@ namespace LastLight.World
             // gokyuzu rengine boyuyor - gercek disari aydinlatmasi boyle.
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Skybox;
 
+            // Gokyuzu malzemesinin KOPYASI uzerinde calisiyoruz.
+            //
+            // Dongu her karede _Exposure ve _Rotation yaziyor; dogrudan varliga
+            // yazinca Editor'de bu degisiklik DISKE isliyor ve oyunu her
+            // oynadigimizda SkyHDRI.mat kirleniyordu. Yani depo, hicbir sey
+            // duzenlemesek bile calisma dizininde degisiklik gosteriyor ve
+            // yazarin niyet ettigi poz degeri zamanla kayiyordu.
+            if (RenderSettings.skybox != null)
+                RenderSettings.skybox = new Material(RenderSettings.skybox);
+
             // Mesafe sisi derinlik algisini uretiyor: sissiz bir voxel dunyada
             // uzak bloklar yakinlarla ayni netlikte kaliyor ve sahne duz
             // gorunuyor. Gece sis cok daha yakin - gorus mesafesini kisaltmak
