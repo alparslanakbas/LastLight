@@ -1,5 +1,6 @@
 using LastLight.Enemies;
 using LastLight.Items;
+using LastLight.Audio;
 using LastLight.Persistence;
 using LastLight.UI;
 using LastLight.Skills;
@@ -118,6 +119,7 @@ namespace LastLight.UI
         {
             _open = !_open;
             IsOpen = _open;
+            AudioManager.OynatUI(_open ? SoundLibrary.Instance?.uiAc : SoundLibrary.Instance?.uiKapa);
             if (_overlay != null) _overlay.EnableInClassList("menu-overlay--open", _open);
             // Menu acikken saat kutusu sekme cubuguyla ust uste biniyordu.
             if (_hud != null) _hud.EnableInClassList("hud--hidden", _open);
@@ -206,7 +208,12 @@ namespace LastLight.UI
                     can ? "row--ready" : "row--locked",
                     can ? "row-sub--ok" : "row-sub--bad",
                     can ? "Uret" : null,
-                    () => { RecipeDatabase.Craft(inv, captured); Refresh(); },
+                    () =>
+                    {
+                        RecipeDatabase.Craft(inv, captured);
+                        AudioManager.OynatUI(SoundLibrary.Instance?.uiUretim);
+                        Refresh();
+                    },
                     can ? null : "eksik");
 
                 row.RegisterCallback<ClickEvent>(evt => ShowRecipeDetail(captured));
@@ -297,7 +304,12 @@ namespace LastLight.UI
                         owned ? "row--owned" : affordable ? "row--ready" : "row--locked",
                         null,
                         owned ? null : affordable ? "Ac (" + perk.Cost + ")" : null,
-                        () => { state.Unlock(captured.Id); Refresh(); },
+                        () =>
+                        {
+                            state.Unlock(captured.Id);
+                            AudioManager.OynatUI(SoundLibrary.Instance?.uiOnay);
+                            Refresh();
+                        },
                         owned ? "ACIK" : affordable ? null : perk.Cost + " puan");
 
                     row.RegisterCallback<ClickEvent>(evt =>

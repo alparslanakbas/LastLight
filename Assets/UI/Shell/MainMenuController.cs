@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using LastLight.Audio;
 using LastLight.Flow;
 using LastLight.Persistence;
 using LastLight.Settings;
@@ -36,21 +37,32 @@ namespace LastLight.UI
             SettingsPanelBuilder.BuildInto(root.Q<VisualElement>("settingsHost"));
 
             var cont = root.Q<Button>("continueButton");
-            cont.clicked += GameFlow.ContinueGame;
+            Tikla(cont, GameFlow.ContinueGame);
             cont.SetEnabled(SaveSystem.SaveExists);
 
-            root.Q<Button>("newGameButton").clicked += OnNewGame;
-            root.Q<Button>("settingsButton").clicked += () => Show(_settings);
-            root.Q<Button>("settingsBack").clicked += () => Show(_home);
-            root.Q<Button>("quitButton").clicked += Quit;
+            Tikla(root.Q<Button>("newGameButton"), OnNewGame);
+            Tikla(root.Q<Button>("settingsButton"), () => Show(_settings));
+            Tikla(root.Q<Button>("settingsBack"), () => Show(_home));
+            Tikla(root.Q<Button>("quitButton"), Quit);
 
-            root.Q<Button>("confirmYes").clicked += GameFlow.StartNewGame;
-            root.Q<Button>("confirmNo").clicked += () => Show(_home);
+            Tikla(root.Q<Button>("confirmYes"), GameFlow.StartNewGame);
+            Tikla(root.Q<Button>("confirmNo"), () => Show(_home));
 
             root.Q<Label>("saveInfo").text = SaveInfoText();
             root.Q<Label>("version").text = "surum " + Application.version;
 
             Show(_home);
+        }
+
+        /// <summary>Tek yerden ses + eylem; yeni dugmede sesi unutmak imkansiz.</summary>
+        static void Tikla(Button btn, System.Action action)
+        {
+            if (btn == null) return;
+            btn.clicked += () =>
+            {
+                AudioManager.OynatUI(SoundLibrary.Instance?.uiTik);
+                action();
+            };
         }
 
         void OnNewGame()

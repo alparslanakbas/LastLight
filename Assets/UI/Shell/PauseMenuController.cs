@@ -1,3 +1,4 @@
+using LastLight.Audio;
 using LastLight.Flow;
 using LastLight.Persistence;
 using LastLight.Settings;
@@ -42,16 +43,30 @@ namespace LastLight.UI
 
             SettingsPanelBuilder.BuildInto(root.Q<VisualElement>("pauseSettingsHost"));
 
-            root.Q<Button>("resumeButton").clicked += Resume;
-            root.Q<Button>("saveButton").clicked += SaveNow;
-            root.Q<Button>("pauseSettings").clicked += () => ShowSettings(true);
-            root.Q<Button>("pauseSettingsBack").clicked += () => ShowSettings(false);
-            root.Q<Button>("toMenuButton").clicked += ToMenu;
+            Tikla(root.Q<Button>("resumeButton"), Resume);
+            Tikla(root.Q<Button>("saveButton"), SaveNow);
+            Tikla(root.Q<Button>("pauseSettings"), () => ShowSettings(true));
+            Tikla(root.Q<Button>("pauseSettingsBack"), () => ShowSettings(false));
+            Tikla(root.Q<Button>("toMenuButton"), ToMenu);
 
             ShowSettings(false);
         }
 
         void OnDisable() => IsPaused = false;
+
+        /// <summary>
+        /// Her dugmeye ayri ayri ses satiri yazmak yerine tek yerden
+        /// bagliyoruz; yeni bir dugme eklenince sesini unutmak imkansiz.
+        /// </summary>
+        static void Tikla(UnityEngine.UIElements.Button btn, System.Action action)
+        {
+            if (btn == null) return;
+            btn.clicked += () =>
+            {
+                AudioManager.OynatUI(SoundLibrary.Instance?.uiTik);
+                action();
+            };
+        }
 
         void Update()
         {

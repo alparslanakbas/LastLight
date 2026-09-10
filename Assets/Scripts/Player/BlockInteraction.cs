@@ -1,4 +1,5 @@
 using LastLight.Enemies;
+using LastLight.Audio;
 using LastLight.Items;
 using LastLight.Skills;
 using LastLight.Voxel;
@@ -65,6 +66,10 @@ namespace LastLight.Player
                 // cokme sirasinda SetBlock tekrar cagrildigi icin ic ice
                 // degerlendirme ve sonsuz dongu riski olurdu.
                 StructuralIntegrity.Evaluate(world, _targetBlock);
+
+                var lib = SoundLibrary.Instance;
+                if (lib != null)
+                    AudioManager.Oynat(lib.KirmaSesi(broken), _targetBlock + Vector3.one * 0.5f, 0.75f);
             }
 
             if (Mouse.current.rightButton.wasPressedThisFrame)
@@ -84,12 +89,14 @@ namespace LastLight.Player
                             _placeAt.x, _placeAt.z, world.WorldSizeX, world.WorldSizeZ);
                         PlacedLight.Spawn((Vector3)_placeAt + new Vector3(0.5f, 0.25f, 0.5f), drain);
                         inventory.Inventory.RemoveAt(inventory.Inventory.SelectedIndex);
+                        AudioManager.Oynat(SoundLibrary.Instance?.blokKoy, _placeAt, 0.55f);
                     }
                     else if (!stack.IsEmpty && ItemDatabase.IsPlaceable(stack.Id))
                     {
                         world.SetBlock(_placeAt.x, _placeAt.y, _placeAt.z, ItemDatabase.BlockFor(stack.Id));
                         inventory.Inventory.RemoveAt(inventory.Inventory.SelectedIndex);
                         StructuralIntegrity.Evaluate(world, _placeAt);
+                        AudioManager.Oynat(SoundLibrary.Instance?.blokKoy, _placeAt, 0.6f);
                     }
                 }
             }
@@ -112,6 +119,7 @@ namespace LastLight.Player
             if (enemy == null) return false;
 
             enemy.TakeDamage(25f);
+            AudioManager.Oynat(SoundLibrary.Instance?.dusmanVurus, hit.point, 0.8f, 0.14f);
             return true;
         }
 

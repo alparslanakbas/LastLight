@@ -1,4 +1,5 @@
 using System.IO;
+using LastLight.Audio;
 using LastLight.Flow;
 using LastLight.Items;
 using LastLight.Player;
@@ -74,6 +75,7 @@ namespace ProjectBootstrap
 
             CreatePauseUI();
             EnsureEventSystem();
+            CreateAudio(worldAmbience: true);
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -328,6 +330,10 @@ namespace ProjectBootstrap
             camGo.tag = "MainCamera";
             camGo.AddComponent<MenuBackdrop>();
 
+            // AudioListener olmadan menu dugmeleri sessiz kaliyor; oyun
+            // sahnesinde oyuncu kamerasinda zaten var.
+            camGo.AddComponent<AudioListener>();
+
             var sky = AssetDatabase.LoadAssetAtPath<Material>(MaterialDir + "/SkyHDRI.mat");
             if (sky != null)
             {
@@ -352,6 +358,11 @@ namespace ProjectBootstrap
             es.AddComponent<EventSystem>();
             es.AddComponent<InputSystemUIInputModule>();
 
+            // Menude de ses lazim: sessiz dugme, tiklamanin isleyip
+            // islemedigini belirsiz birakiyor. Ruzgar yok - menu sahnesinde
+            // gun dongusu olmadigi icin anlamsiz olurdu.
+            CreateAudio(worldAmbience: false);
+
             EditorSceneManager.SaveScene(scene, MenuScenePath);
             Debug.Log("[SceneBootstrap] Ana menu sahnesi kuruldu.");
         }
@@ -370,6 +381,84 @@ namespace ProjectBootstrap
                 list.Add(new EditorBuildSettingsScene(path, true));
 
             EditorBuildSettings.scenes = list.ToArray();
+        }
+
+        // ---------- Ses ----------
+
+        const string AudioDir = "Assets/Audio";
+
+        /// <summary>
+        /// Ses sistemini kurar ve klipleri dosya yolundan yukler.
+        ///
+        /// Elle surukle-birak yerine yoldan yukluyoruz: sahne bozulup
+        /// yeniden kuruldugunda seslerin de geri gelmesi gerekiyor, projenin
+        /// geri kalani da ayni ilkeyle kurulu. Bir dosya eksikse Unity
+        /// sessizce null biraksin diye tek tek uyarmiyoruz - eksik ses
+        /// oyunu durdurmaz, eksik uyari yigini ise konsolu kullanilmaz yapar.
+        /// </summary>
+        static void CreateAudio(bool worldAmbience)
+        {
+            var existing = GameObject.Find("Audio");
+            if (existing != null) Object.DestroyImmediate(existing);
+
+            var go = new GameObject("Audio");
+            go.AddComponent<AudioManager>();
+            var lib = go.AddComponent<SoundLibrary>();
+            if (worldAmbience) go.AddComponent<WorldAmbience>();
+
+            lib.adimCimen = Yukle("Adim/adim_grass_", 5);
+            lib.adimBeton = Yukle("Adim/adim_concrete_", 5);
+            lib.adimKar = Yukle("Adim/adim_snow_", 5);
+            lib.adimTahta = Yukle("Adim/adim_wood_", 5);
+            lib.adimYumusak = Yukle("Adim/adim_carpet_", 5);
+
+            // Vurus ve kirma ayni aileden ama farkli agirlikta: hafif olan
+            // "vurdum", agir olan "kirildi" hissi veriyor.
+            lib.vurTas = Yukle("Darbe/impactMining_", 5);
+            lib.vurTahta = Yukle("Darbe/impactWood_light_", 5);
+            lib.vurMetal = Yukle("Darbe/impactMetal_light_", 5);
+            lib.vurYumusak = Yukle("Darbe/impactSoft_medium_", 5);
+
+            lib.kirTas = Yukle("Darbe/impactMining_", 5);
+            lib.kirTahta = Yukle("Darbe/impactWood_heavy_", 5);
+            lib.kirMetal = Yukle("Darbe/impactMetal_heavy_", 5);
+            lib.kirYumusak = Yukle("Darbe/impactSoft_heavy_", 5);
+            lib.blokKoy = Yukle("Darbe/impactPlank_medium_", 5);
+
+            lib.dusmanVurus = Yukle("Darbe/impactPunch_medium_", 5);
+            lib.dusmanOlum = Yukle("Darbe/impactSoft_heavy_", 5);
+
+            lib.uiTik = Tek("Arayuz/click_001", "Arayuz/click_002");
+            lib.uiAc = Tek("Arayuz/open_001");
+            lib.uiKapa = Tek("Arayuz/close_001");
+            lib.uiOnay = Tek("Arayuz/confirmation_001");
+            lib.uiHata = Tek("Arayuz/error_002");
+            lib.uiUretim = Tek("Cesitli/metalClick", "Cesitli/chop");
+            lib.uiToplama = Tek("Cesitli/handleCoins");
+        }
+
+        /// <summary>onek + 0..n-1 kalibiyla numarali dosyalari yukler.</summary>
+        static AudioClip[] Yukle(string onek, int adet)
+        {
+            var list = new System.Collections.Generic.List<AudioClip>(adet);
+            for (int i = 0; i < adet; i++)
+            {
+                var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    AudioDir + "/" + onek + i + ".ogg");
+                if (clip != null) list.Add(clip);
+            }
+            return list.ToArray();
+        }
+
+        static AudioClip[] Tek(params string[] yollar)
+        {
+            var list = new System.Collections.Generic.List<AudioClip>(yollar.Length);
+            foreach (var y in yollar)
+            {
+                var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(AudioDir + "/" + y + ".ogg");
+                if (clip != null) list.Add(clip);
+            }
+            return list.ToArray();
         }
 
         // ---------- Dusmanlar ----------

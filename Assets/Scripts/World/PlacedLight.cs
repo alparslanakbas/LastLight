@@ -21,6 +21,7 @@ namespace LastLight.World
         float _fuel;
         float _drainRate;
         Light _light;
+        AudioSource _audio;
         float _baseRange;
 
         /// <summary>Kalan yakitin oranI (0-1). HUD ve sonme efekti icin.</summary>
@@ -59,6 +60,26 @@ namespace LastLight.World
             pl._drainRate = drainRate;
             pl._light = l;
             pl._baseRange = l.range;
+
+            // Ates sesi mesalenin kendi uzerinde: konumdan gelmesi oyuncunun
+            // karanlikta biraktigi mesaleyi kulakla bulabilmesini sagliyor.
+            var src = go.AddComponent<AudioSource>();
+            src.clip = LastLight.Audio.AmbienceCache.Ates;
+            src.loop = true;
+            src.spatialBlend = 1f;
+            src.rolloffMode = AudioRolloffMode.Linear;
+            src.minDistance = 1.5f;
+            src.maxDistance = 14f;
+            src.volume = 0.5f;
+            // Her mesale klibin farkli bir yerinden basliyor: hepsi ayni
+            // anda baslasaydi yan yana iki mesale tek ve yapay bir ses olurdu.
+            if (src.clip != null)
+            {
+                src.time = Random.Range(0f, src.clip.length);
+                src.Play();
+            }
+            pl._audio = src;
+
             return pl;
         }
 
@@ -84,6 +105,10 @@ namespace LastLight.World
             float t = Mathf.Clamp01(FuelRatio / 0.25f);
             _light.intensity = Mathf.Lerp(0.6f, 3.2f, t);
             _light.range = Mathf.Lerp(_baseRange * 0.45f, _baseRange, t);
+
+            // Ates sesi de kisiliyor: sonmek uzere olan mesale hem gorsel
+            // hem isitsel olarak zayifliyor.
+            if (_audio != null) _audio.volume = Mathf.Lerp(0.16f, 0.5f, t);
         }
 
         /// <summary>Konuma gore yakit tuketim hizi - biyomdan geliyor.</summary>

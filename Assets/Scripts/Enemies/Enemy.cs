@@ -233,6 +233,8 @@ namespace LastLight.Enemies
 
             var hp = _player != null ? _player.GetComponent<PlayerHealth>() : null;
             if (hp != null) hp.TakeDamage(_damage);
+            LastLight.Audio.AudioManager.Oynat(
+                LastLight.Audio.SoundLibrary.Instance?.dusmanVurus, transform.position, 0.85f, 0.18f);
         }
 
         void BreakBlock(int x, int y, int z)
@@ -261,7 +263,15 @@ namespace LastLight.Enemies
         public void TakeDamage(float amount)
         {
             _health -= amount;
-            if (_health <= 0f) Destroy(gameObject);
+            if (_health <= 0f)
+            {
+                // Ses nesneyle birlikte yok olmasin diye havuzdan calıyoruz;
+                // dusmanin uzerindeki bir AudioSource ile calsaydi Destroy
+                // sesi ortasindan keserdi.
+                LastLight.Audio.AudioManager.Oynat(
+                    LastLight.Audio.SoundLibrary.Instance?.dusmanOlum, transform.position, 0.9f, 0.15f);
+                Destroy(gameObject);
+            }
         }
     }
 }

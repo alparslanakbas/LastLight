@@ -1,0 +1,15 @@
+Bu klasordeki ses dosyalari Kenney (kenney.nl) tarafindan uretilmis ve
+CC0 1.0 Universal (kamu mali) lisansiyla yayinlanmistir.
+
+Paketler:
+  - Impact Sounds     (adim ve darbe sesleri)
+  - Interface Sounds  (arayuz sesleri)
+  - RPG Audio         (cesitli)
+
+CC0 atif zorunlulugu getirmez; yine de kaynak burada kayitli tutuluyor ki
+ileride bir dosyanin nereden geldigi sorulunca aranmasi gerekmesin.
+
+Ruzgar ve ates sesleri bu klasorde YOK: onlar calisma aninda kod ile
+uretiliyor (Assets/Scripts/Audio/ProceduralAmbience.cs). Gurultu tabanli
+sesler icin sentez, dosya tutmaktan hem daha kucuk hem sonsuz cesitlilik
+veriyor.

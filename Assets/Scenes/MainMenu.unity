@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &1019243509
+--- !u!1 &656455576
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1019243512}
-  - component: {fileID: 1019243511}
-  - component: {fileID: 1019243510}
+  - component: {fileID: 656455579}
+  - component: {fileID: 656455578}
+  - component: {fileID: 656455577}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -137,13 +137,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1019243510
+--- !u!114 &656455577
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1019243509}
+  m_GameObject: {fileID: 656455576}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
@@ -168,13 +168,13 @@ MonoBehaviour:
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
---- !u!114 &1019243511
+--- !u!114 &656455578
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1019243509}
+  m_GameObject: {fileID: 656455576}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
@@ -183,13 +183,13 @@ MonoBehaviour:
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
---- !u!4 &1019243512
+--- !u!4 &656455579
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1019243509}
+  m_GameObject: {fileID: 656455576}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -198,7 +198,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1455241866
+--- !u!1 &797030491
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -206,9 +206,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1455241869}
-  - component: {fileID: 1455241868}
-  - component: {fileID: 1455241867}
+  - component: {fileID: 797030494}
+  - component: {fileID: 797030493}
+  - component: {fileID: 797030492}
   m_Layer: 0
   m_Name: MenuUI
   m_TagString: Untagged
@@ -216,25 +216,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1455241867
+--- !u!114 &797030492
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1455241866}
+  m_GameObject: {fileID: 797030491}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ccc808fae5d70740b5cd25359e8dd1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LastLight.UI.MainMenuController
---- !u!114 &1455241868
+--- !u!114 &797030493
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1455241866}
+  m_GameObject: {fileID: 797030491}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
@@ -251,13 +251,13 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!4 &1455241869
+--- !u!4 &797030494
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1455241866}
+  m_GameObject: {fileID: 797030491}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -266,7 +266,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2045572650
+--- !u!1 &1958519304
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -274,9 +274,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2045572653}
-  - component: {fileID: 2045572652}
-  - component: {fileID: 2045572651}
+  - component: {fileID: 1958519308}
+  - component: {fileID: 1958519307}
+  - component: {fileID: 1958519306}
+  - component: {fileID: 1958519305}
   m_Layer: 0
   m_Name: MenuCamera
   m_TagString: MainCamera
@@ -284,26 +285,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2045572651
+--- !u!81 &1958519305
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958519304}
+  m_Enabled: 1
+--- !u!114 &1958519306
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2045572650}
+  m_GameObject: {fileID: 1958519304}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0f28cf1e32757fa4d947cb965276e07a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LastLight.Flow.MenuBackdrop
   degreesPerSecond: 1.2
---- !u!20 &2045572652
+  exposure: 0.3
+  tint: {r: 0.62, g: 0.66, b: 0.82, a: 1}
+--- !u!20 &1958519307
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2045572650}
+  m_GameObject: {fileID: 1958519304}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
@@ -348,15 +359,174 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &2045572653
+--- !u!4 &1958519308
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2045572650}
+  m_GameObject: {fileID: 1958519304}
   serializedVersion: 2
   m_LocalRotation: {x: 0.05233596, y: 0, z: 0, w: 0.9986295}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2141105950
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2141105953}
+  - component: {fileID: 2141105952}
+  - component: {fileID: 2141105951}
+  m_Layer: 0
+  m_Name: Audio
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2141105951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141105950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2698f08de53c4484ab94eed296044938, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LastLight.Audio.SoundLibrary
+  adimCimen:
+  - {fileID: 8300000, guid: 5e4941aa83f41424e89513e31314312e, type: 3}
+  - {fileID: 8300000, guid: 69227595f93c6d244a4cece1648c063e, type: 3}
+  - {fileID: 8300000, guid: 57a6726ab8ed84a40a9fa85f19787d72, type: 3}
+  - {fileID: 8300000, guid: 81be0849c7590d042ba54d8dccf9e9d9, type: 3}
+  - {fileID: 8300000, guid: 17df5dc79fcc7dc4696c8324fba05f73, type: 3}
+  adimBeton:
+  - {fileID: 8300000, guid: 58c5d9eaaa27f214481dddd02ca31dc5, type: 3}
+  - {fileID: 8300000, guid: f5fe158788b17a8439c72b87e10d3dc2, type: 3}
+  - {fileID: 8300000, guid: 5d0d1ed4844eca64188c6f6e0dc047ae, type: 3}
+  - {fileID: 8300000, guid: ae104b9e72bf3ec47a4d073b8a661800, type: 3}
+  - {fileID: 8300000, guid: d400a6112aec392418148796328dfd4f, type: 3}
+  adimKar:
+  - {fileID: 8300000, guid: 6e185a3b48c553f439064d9494924dfe, type: 3}
+  - {fileID: 8300000, guid: 8384131ac431346498b6347d64968ca5, type: 3}
+  - {fileID: 8300000, guid: a2c4ce724a9d1a14f9178ffdfc404972, type: 3}
+  - {fileID: 8300000, guid: 4be52154d51ac2946bf7946fe39fb751, type: 3}
+  - {fileID: 8300000, guid: a0b171f95a8c4294b89c601e3c8e7263, type: 3}
+  adimTahta:
+  - {fileID: 8300000, guid: 0150c4f1623b65a44b54baf0f7c463c0, type: 3}
+  - {fileID: 8300000, guid: 55336c20e59a0be4d886a4ea02c11914, type: 3}
+  - {fileID: 8300000, guid: bf9c03d2a4cdbab4282a8a75b944d4c6, type: 3}
+  - {fileID: 8300000, guid: 701b234e1a253bb4b9f1ba261e333d59, type: 3}
+  - {fileID: 8300000, guid: 967566e65c8ff3740a59535a7f4cac53, type: 3}
+  adimYumusak:
+  - {fileID: 8300000, guid: 0f21115e5d4f7ec489286ee6ba161b69, type: 3}
+  - {fileID: 8300000, guid: c6447112e12cf7042a0d1585885b71ff, type: 3}
+  - {fileID: 8300000, guid: 6e30c0d68f0be2d42b7894824e007d77, type: 3}
+  - {fileID: 8300000, guid: ebedb05faa7fead49ac7e3ba192340d6, type: 3}
+  - {fileID: 8300000, guid: a7fe70b665acda44296011becb4592e6, type: 3}
+  vurTas:
+  - {fileID: 8300000, guid: cd0b5392515903348a3723dd47a820cb, type: 3}
+  - {fileID: 8300000, guid: 69f4849f3ca69904da267c093dd28d0e, type: 3}
+  - {fileID: 8300000, guid: fbdf6b4cd26f2fd4db9c898ab4515d2c, type: 3}
+  - {fileID: 8300000, guid: 1cc2a847a4ca8f442b073049fbe59980, type: 3}
+  - {fileID: 8300000, guid: 064a19d12a39d624b95f967dee675410, type: 3}
+  vurTahta: []
+  vurMetal: []
+  vurYumusak:
+  - {fileID: 8300000, guid: b1e01854f80e2554294dbfa786067e04, type: 3}
+  - {fileID: 8300000, guid: e55e21b54652b1c4c9f6e4b05d26198d, type: 3}
+  - {fileID: 8300000, guid: 2081056eea598e444ae604bfa3e26ae0, type: 3}
+  - {fileID: 8300000, guid: 1ebc4feb3c6beca4185ee309a2b22124, type: 3}
+  - {fileID: 8300000, guid: 67982359ae91e2f4e93d469500a86c6a, type: 3}
+  kirTas:
+  - {fileID: 8300000, guid: cd0b5392515903348a3723dd47a820cb, type: 3}
+  - {fileID: 8300000, guid: 69f4849f3ca69904da267c093dd28d0e, type: 3}
+  - {fileID: 8300000, guid: fbdf6b4cd26f2fd4db9c898ab4515d2c, type: 3}
+  - {fileID: 8300000, guid: 1cc2a847a4ca8f442b073049fbe59980, type: 3}
+  - {fileID: 8300000, guid: 064a19d12a39d624b95f967dee675410, type: 3}
+  kirTahta:
+  - {fileID: 8300000, guid: bd7d0dea3f1c68c488ba481e90c9f460, type: 3}
+  - {fileID: 8300000, guid: 15df82954ee18c745b5b1e2c2d093d0b, type: 3}
+  - {fileID: 8300000, guid: a3537dd5b53bd5847bf1452c5ef955ae, type: 3}
+  - {fileID: 8300000, guid: 7620cb6e11a9caa4186255e8f2a1587c, type: 3}
+  - {fileID: 8300000, guid: 25edc3270c1c2e0429173a8bd3fb1ce5, type: 3}
+  kirMetal:
+  - {fileID: 8300000, guid: 9d64acdeaa4b1904eaddca9f7870a46c, type: 3}
+  - {fileID: 8300000, guid: d59eae5ee38425c4b8eab53d51c1ab0f, type: 3}
+  - {fileID: 8300000, guid: 576ce36802559074e9cd5fd05482dc40, type: 3}
+  - {fileID: 8300000, guid: 4718ed84ead0c464299741aa5daf75ea, type: 3}
+  - {fileID: 8300000, guid: 7827eefaab69fb74eb349482895f9722, type: 3}
+  kirYumusak:
+  - {fileID: 8300000, guid: f39b74e20719723428d0f9e838ae9737, type: 3}
+  - {fileID: 8300000, guid: 32013a3cf0ab9c1479e2ee9fbecefd91, type: 3}
+  - {fileID: 8300000, guid: 769911478f841c849a861c0a3222d81d, type: 3}
+  - {fileID: 8300000, guid: 7cbcb7ea02c106d4f85709c775c548b8, type: 3}
+  - {fileID: 8300000, guid: 06d6e19762593d14faa424026e5aba95, type: 3}
+  blokKoy:
+  - {fileID: 8300000, guid: b8a67f2bbecb7d74ebd845a163d2e66b, type: 3}
+  - {fileID: 8300000, guid: 4d1bea2d1f4f1a747b59e6dce67946d1, type: 3}
+  - {fileID: 8300000, guid: e4b879930df7a2443a128b662fd29288, type: 3}
+  - {fileID: 8300000, guid: 6ce05568f69f59f4f98a8d5176cf5a70, type: 3}
+  - {fileID: 8300000, guid: 8e9e9081660ddbb4496c2627af9f8d6b, type: 3}
+  dusmanVurus:
+  - {fileID: 8300000, guid: 50b19d7f535d3c94eae94c79c8ef2b6b, type: 3}
+  - {fileID: 8300000, guid: 0a7c7269671df814b8e9693835b5b7cf, type: 3}
+  - {fileID: 8300000, guid: 262c9d548f27fba42ab88d57bb47c081, type: 3}
+  - {fileID: 8300000, guid: 37a114f2e468cf9458a9346a57ff1771, type: 3}
+  - {fileID: 8300000, guid: 585877d03e45ae6499df48dd25d26805, type: 3}
+  dusmanOlum:
+  - {fileID: 8300000, guid: f39b74e20719723428d0f9e838ae9737, type: 3}
+  - {fileID: 8300000, guid: 32013a3cf0ab9c1479e2ee9fbecefd91, type: 3}
+  - {fileID: 8300000, guid: 769911478f841c849a861c0a3222d81d, type: 3}
+  - {fileID: 8300000, guid: 7cbcb7ea02c106d4f85709c775c548b8, type: 3}
+  - {fileID: 8300000, guid: 06d6e19762593d14faa424026e5aba95, type: 3}
+  uiTik:
+  - {fileID: 8300000, guid: d62f2073693da134a9ac1b7c695c903b, type: 3}
+  - {fileID: 8300000, guid: 8e73903aabafcac4e9385508fdf715ca, type: 3}
+  uiAc:
+  - {fileID: 8300000, guid: 0fb43733134297741bfa939ec1ae0065, type: 3}
+  uiKapa:
+  - {fileID: 8300000, guid: 96b6f233d1f86c8459de45e253840fa9, type: 3}
+  uiOnay:
+  - {fileID: 8300000, guid: 5efb2737cfad88248be6609da7ee5a21, type: 3}
+  uiHata:
+  - {fileID: 8300000, guid: 3173f736643d5b44cbf37c73957e186c, type: 3}
+  uiUretim:
+  - {fileID: 8300000, guid: 9c6efb7cf554f694f90692d7639de2e2, type: 3}
+  - {fileID: 8300000, guid: 75a1102453f315f408629d773df9643f, type: 3}
+  uiToplama:
+  - {fileID: 8300000, guid: 8d7d22086e1e5eb4ba320abc2b077e04, type: 3}
+--- !u!114 &2141105952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141105950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de7c6de4ca81d74488c97f13d4c4d7a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LastLight.Audio.AudioManager
+--- !u!4 &2141105953
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141105950}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -367,6 +537,7 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 2045572653}
-  - {fileID: 1455241869}
-  - {fileID: 1019243512}
+  - {fileID: 1958519308}
+  - {fileID: 797030494}
+  - {fileID: 656455579}
+  - {fileID: 2141105953}
