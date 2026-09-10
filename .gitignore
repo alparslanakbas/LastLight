@@ -114,3 +114,6 @@ InitTestScene*.unity*
 
 # Visual Studio bilesen listesi - Unity uretiyor, projeye ait degil
 .vsconfig
+
+# Yol haritasi kisisel plan; depo public olabilir
+YOL-HARITASI.md
