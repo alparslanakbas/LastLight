@@ -13,6 +13,12 @@ namespace LastLight.Voxel
         const float NoiseScale = 0.045f;
         const int HeightRange = 7;
 
+        // Ikinci oktav: tek oktav tepeleri birbirinin ayni yapiyordu.
+        // Puruzsuz yuzeye gecince bu fark gorunur hale geldi - kup
+        // basamaklariyken zaten kaybolan detay simdi okunuyor.
+        const float DetailScale = 0.13f;
+        const float DetailWeight = 0.30f;
+
         /// <summary>Tek bir chunk'in bloklarini doldurur.</summary>
         public static void FillChunk(Chunk chunk, int worldX, int worldZ)
         {
@@ -25,89 +31,60 @@ namespace LastLight.Voxel
                 BiomeType biome = BiomeMap.At(wx, wz, worldX, worldZ);
                 BiomeDef def = BiomeDatabase.Get(biome);
 
-                int height = SurfaceHeight(wx, wz, def);
+                float height = SurfaceHeightF(wx, wz, def);
 
                 for (int y = 0; y < Chunk.Size; y++)
                 {
                     int wy = origin.y + y;
-                    if (wy > height) break;
+
+                    // Yogunluk: voxel merkezinin yuzeye gore konumu.
+                    // wy == height oldugunda tam 0.5 - yani esik degeri
+                    // voxel'in tam ortasindan geciyor ve yuzey kesirli
+                    // yukseklige gore suruklenebiliyor. Eski tamsayi
+                    // mantiginda yuzey ancak tam voxel siniralarina
+                    // oturabildigi icin her yukselti bir basamakti.
+                    float d = Mathf.Clamp01(height - wy + 0.5f);
+                    if (d <= 0f) break;
 
                     BlockId id;
-                    if (wy == height) id = def.Surface;
-                    else if (wy > height - 4) id = def.SubSurface;
+                    if (wy > height - 1f) id = def.Surface;
+                    else if (wy > height - 4f) id = def.SubSurface;
                     else id = BlockId.Stone;
 
-                    chunk.Set(x, y, z, id);
+                    // Esigin altinda kalan voxel hala Hava sayiliyor: blok
+                    // dizisi ikili kaliyor ve yol bulma, yapisal butunluk,
+                    // bitki serpistirme gibi her sey eskisi gibi calisiyor.
+                    // Yogunluk yalnizca YUZEYIN nereden gectigini belirliyor.
+                    chunk.SetSmooth(x, y, z,
+                        d >= 0.5f ? id : BlockId.Air,
+                        (byte)Mathf.RoundToInt(d * 255f));
                 }
             }
         }
 
-        public static int SurfaceHeight(int wx, int wz, BiomeDef def)
+        public static int SurfaceHeight(int wx, int wz, BiomeDef def) =>
+            Mathf.RoundToInt(SurfaceHeightF(wx, wz, def));
+
+        /// <summary>
+        /// Kesirli yuzey yuksekligi. Puruzsuz arazinin butun mesele bu:
+        /// yukseklik artik tamsayi degil, dolayisiyla yuzey voxel
+        /// sinirlarina oturmak zorunda degil.
+        /// </summary>
+        public static float SurfaceHeightF(int wx, int wz, BiomeDef def)
         {
             float n = Mathf.PerlinNoise(wx * NoiseScale, wz * NoiseScale);
-            return BaseHeight + Mathf.RoundToInt(n * HeightRange * def.HeightScale);
+            float detail = Mathf.PerlinNoise(wx * DetailScale + 100f, wz * DetailScale + 100f);
+            float combined = n + (detail - 0.5f) * DetailWeight;
+
+            return BaseHeight + combined * HeightRange * def.HeightScale;
         }
 
-        /// <summary>
-        /// Arazideki tek bloklu basamaklari rampaya cevirir.
-        ///
-        /// Voxel arazinin "Minecraft" gorunmesinin asil sebebi bu basamaklar:
-        /// her yukselti keskin bir kup kenari. Tek blokluk farklari egime
-        /// cevirince tepeler akiyor.
-        ///
-        /// Yalnizca TEK komsusu alcak olan bloklar cevriliyor. Iki komsusu
-        /// alcak olan yerler kose rampasi ister; duz rampa koyarsak bir kenar
-        /// havada kaliyor ve delik gibi gorunuyor.
-        /// </summary>
-        public static void SmoothTerrain(VoxelWorld world, int worldX, int worldZ)
-        {
-            int converted = 0;
+        // Not: Buradaki "basamaklari rampaya cevir" adimi kaldirildi.
+        // Rampa/yarim blok, kup arazinin basamaklarini elle yumusatma
+        // denemesiydi; yogunluk alanina gecince yuzey zaten surekli
+        // uretiliyor ve o adimin cozmeye calistigi sorun ortadan kalkti.
+        // Bicim sistemi duruyor - oyuncunun koydugu bloklar icin gecerli.
 
-            for (int x = 1; x < worldX - 1; x++)
-            for (int z = 1; z < worldZ - 1; z++)
-            {
-                int y = SurfaceHeightAt(world, x, z);
-                if (y <= 1) continue;
-
-                // Ustu acik olmali: bina veya agac altindaki blogu egmeyiz.
-                if (BlockDatabase.IsSolid(world.GetBlock(x, y + 1, z))) continue;
-
-                int hN = SurfaceHeightAt(world, x, z + 1);
-                int hS = SurfaceHeightAt(world, x, z - 1);
-                int hE = SurfaceHeightAt(world, x + 1, z);
-                int hW = SurfaceHeightAt(world, x - 1, z);
-
-                int lowerCount = 0;
-                BlockShape shape = BlockShape.Cube;
-
-                // Rampa alcak komsuya dogru iniyor: kuzey komsu alcaksa
-                // blogun kuzey kenari alcak olmali (RampSouth).
-                if (hN == y - 1) { lowerCount++; shape = BlockShape.RampSouth; }
-                if (hS == y - 1) { lowerCount++; shape = BlockShape.RampNorth; }
-                if (hE == y - 1) { lowerCount++; shape = BlockShape.RampWest; }
-                if (hW == y - 1) { lowerCount++; shape = BlockShape.RampEast; }
-
-                if (lowerCount != 1) continue;
-
-                world.SetShape(x, y, z, shape);
-                converted++;
-            }
-
-            Debug.Log("[Terrain] " + converted + " blok rampaya cevrildi.");
-        }
-
-        static int SurfaceHeightAt(VoxelWorld world, int x, int z)
-        {
-            for (int y = Chunk.Size * 4 - 1; y >= 0; y--)
-                if (BlockDatabase.IsSolid(world.GetBlock(x, y, z))) return y;
-            return 0;
-        }
-
-        /// <summary>
-        /// Agaclari dunya olustuktan sonra ekler. Chunk doldurma sirasinda
-        /// eklenemez: bir agac chunk sinirini asabiliyor ve o chunk henuz
-        /// olusmamis olabiliyor.
-        /// </summary>
         public static void PlantTrees(VoxelWorld world, int worldX, int worldZ, int seed)
         {
             // Agaclar artik mesh olarak serpistiriliyor (TreeScatter): bloktan

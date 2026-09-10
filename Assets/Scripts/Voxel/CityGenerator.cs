@@ -78,12 +78,17 @@ namespace LastLight.Voxel
                     // yamalar olusuyordu.
                     BlockId fill = world.GetBlock(x, natural, z);
                     if (!BlockDatabase.IsSolid(fill)) fill = BlockId.Stone;
+
+                    // SetTerrain, SetBlock degil: tesviye ARAZIYI
+                    // degistiriyor. SetBlock kupsel yazsaydi duzlenen alan
+                    // cevresindeki puruzsuz araziden keskin bir plato gibi
+                    // ayrilirdi.
                     for (int y = natural + 1; y <= target; y++)
-                        world.SetBlock(x, y, z, fill);
+                        world.SetTerrain(x, y, z, fill, 255);
                 }
                 else
                     for (int y = natural; y > target; y--)
-                        world.SetBlock(x, y, z, BlockId.Air);
+                        world.SetTerrain(x, y, z, BlockId.Air, 0);
             }
         }
 
@@ -97,11 +102,20 @@ namespace LastLight.Voxel
                 if (!OnRoad(x, minX) && !OnRoad(z, minZ)) continue;
 
                 int y = FindSurface(world, x, z);
-                world.SetBlock(x, y, z, BlockId.Road);
+
+                // Yol KUP degil ARAZI: zemine serilmis bir yuzey, kirilabilir
+                // bir blok degil. Kup yazdigimizda yolun her kenarinda arazi
+                // yuzeyiyle bulusmayan bir dikis olusuyordu - puruzsuz arazi
+                // kupe teget gecemiyor. Araziye yazinca yol dogrudan zeminin
+                // devami oluyor ve dikis tamamen kayboluyor.
+                //
+                // Binalar kup kalmaya devam ediyor: onlar zaten insa edilmis
+                // yapilar ve kupsel gorunmeleri dogru.
+                world.SetTerrain(x, y, z, BlockId.Road, 255);
 
                 // Yolun ustu acik kalsin (tesviye sonrasi genelde zaten acik).
                 for (int c = 1; c <= 3; c++)
-                    world.SetBlock(x, y + c, z, BlockId.Air);
+                    world.SetTerrain(x, y + c, z, BlockId.Air, 0);
             }
         }
 

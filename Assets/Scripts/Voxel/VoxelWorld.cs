@@ -21,6 +21,9 @@ namespace LastLight.Voxel
         [Header("Blok atlasi malzemesi")]
         [SerializeField] Material blockMaterial;
 
+        [Header("Puruzsuz arazi malzemesi")]
+        [SerializeField] Material terrainMaterial;
+
         readonly Dictionary<Vector3Int, Chunk> _chunks = new();
         readonly Dictionary<Vector3Int, ChunkView> _views = new();
 
@@ -61,7 +64,7 @@ namespace LastLight.Voxel
         public IReadOnlyDictionary<Vector3Int, Chunk> Chunks => _chunks;
 
         /// <summary>Kayittan yuklenen chunk'lari yerlestirir ve mesh'i yeniler.</summary>
-        public void ApplyLoadedChunk(Vector3Int coord, BlockId[] blocks, BlockShape[] shapes)
+        public void ApplyLoadedChunk(Vector3Int coord, BlockId[] blocks, BlockShape[] shapes, byte[] density)
         {
             if (!_chunks.TryGetValue(coord, out var chunk))
             {
@@ -69,8 +72,16 @@ namespace LastLight.Voxel
                 _chunks[coord] = chunk;
             }
 
-            chunk.LoadRaw(blocks, shapes);
+            chunk.LoadRaw(blocks, shapes, density);
             _dirty.Add(coord);
+
+            // Puruzsuz arazi chunk sinirlarini asarak orneklendigi icin
+            // komsular da yeniden uretilmeli; yoksa yuklenen dunyanin chunk
+            // sinirlarinda catlaklar kaliyor.
+            MarkDirty(coord + Vector3Int.left);  MarkDirty(coord + Vector3Int.right);
+            MarkDirty(coord + Vector3Int.down);  MarkDirty(coord + Vector3Int.up);
+            MarkDirty(coord + new Vector3Int(0, 0, -1));
+            MarkDirty(coord + new Vector3Int(0, 0, 1));
         }
 
         /// <summary>Yukleme oncesi: dunya uretimini atlamak icin isaretler.</summary>
@@ -108,6 +119,70 @@ namespace LastLight.Voxel
         }
 
         /// <summary>
+        /// Yogunluk alanindan okur: 0 = bos, 1 = tam dolu.
+        ///
+        /// SADECE Smooth isaretli voxel'ler alana katkida bulunuyor.
+        /// Oyuncunun koydugu kupler alanin disinda: aksi halde havaya
+        /// konan tek bir kup cevresinde yuvarlak bir yumru olusturur,
+        /// hem kup hem yumru cizilirdi.
+        /// </summary>
+        public float Density(int wx, int wy, int wz)
+        {
+            Vector3Int coord = ToChunkCoord(wx, wy, wz);
+            if (!_chunks.TryGetValue(coord, out var chunk)) return 0f;
+
+            int lx = wx - coord.x * Chunk.Size;
+            int ly = wy - coord.y * Chunk.Size;
+            int lz = wz - coord.z * Chunk.Size;
+
+            if (chunk.GetShape(lx, ly, lz) != BlockShape.Smooth) return 0f;
+            return chunk.GetDensity(lx, ly, lz) / 255f;
+        }
+
+        /// <summary>
+        /// Dogal arazi voxel'i yazar: hem tip hem yogunluk, bicim Smooth.
+        /// Sehir tesviyesi gibi ARAZIYI degistiren isler bunu kullaniyor;
+        /// SetBlock kullansalardi duzlenen alan kupsel bir plato olurdu.
+        /// </summary>
+        public void SetTerrain(int wx, int wy, int wz, BlockId id, byte density)
+        {
+            Vector3Int coord = ToChunkCoord(wx, wy, wz);
+            if (!_chunks.TryGetValue(coord, out var chunk)) return;
+
+            int lx = wx - coord.x * Chunk.Size;
+            int ly = wy - coord.y * Chunk.Size;
+            int lz = wz - coord.z * Chunk.Size;
+
+            chunk.SetSmooth(lx, ly, lz, id, density);
+            MarkNeighbours(coord, lx, ly, lz);
+        }
+
+        public void SetDensity(int wx, int wy, int wz, byte value)
+        {
+            Vector3Int coord = ToChunkCoord(wx, wy, wz);
+            if (!_chunks.TryGetValue(coord, out var chunk)) return;
+
+            int lx = wx - coord.x * Chunk.Size;
+            int ly = wy - coord.y * Chunk.Size;
+            int lz = wz - coord.z * Chunk.Size;
+
+            chunk.SetDensity(lx, ly, lz, value);
+            MarkNeighbours(coord, lx, ly, lz);
+        }
+
+        /// <summary>Bu voxel yogunluk alaninin parcasi mi (dogal arazi mi).</summary>
+        public bool IsSmooth(int wx, int wy, int wz)
+        {
+            Vector3Int coord = ToChunkCoord(wx, wy, wz);
+            if (!_chunks.TryGetValue(coord, out var chunk)) return false;
+
+            return chunk.GetShape(
+                wx - coord.x * Chunk.Size,
+                wy - coord.y * Chunk.Size,
+                wz - coord.z * Chunk.Size) == BlockShape.Smooth;
+        }
+
+        /// <summary>
         /// Blogu degistirir ve etkilenen chunk'lari kirli isaretler.
         /// Blok chunk sinirindaysa komsu chunk'in da mesh'i degisir - onu da isaretliyoruz,
         /// aksi halde sinirda gorunmez duvar veya delik kalir.
@@ -121,15 +196,35 @@ namespace LastLight.Voxel
             int ly = wy - coord.y * Chunk.Size;
             int lz = wz - coord.z * Chunk.Size;
 
-            chunk.Set(lx, ly, lz, id);
+            // Dogal araziden blok kirmak alani OYMALI. chunk.Set bicimi
+            // Cube'a sifirladigi icin, kirilan yer yogunluk alanindan cikip
+            // etrafinda kupsel bir bosluk birakiyordu; oysa referans oyunda
+            // kazilan yer yuvarlak bir krater.
+            if (id == BlockId.Air && chunk.GetShape(lx, ly, lz) == BlockShape.Smooth)
+                chunk.SetSmooth(lx, ly, lz, BlockId.Air, 0);
+            else
+                chunk.Set(lx, ly, lz, id);
+
+            MarkNeighbours(coord, lx, ly, lz);
+        }
+
+        /// <summary>
+        /// Chunk'i ve sinirdaysa komsularini kirli isaretler.
+        ///
+        /// Puruzsuz arazide bu daha da kritik: yogunluk alani chunk
+        /// sinirlarini asarak orneklendigi icin bir voxel degisince komsu
+        /// chunk'in yuzeyi de kayiyor. Isaretlemezsek sinirda catlak kaliyor.
+        /// </summary>
+        void MarkNeighbours(Vector3Int coord, int lx, int ly, int lz)
+        {
             _dirty.Add(coord);
 
-            if (lx == 0) MarkDirty(coord + Vector3Int.left);
-            if (lx == Chunk.Size - 1) MarkDirty(coord + Vector3Int.right);
-            if (ly == 0) MarkDirty(coord + Vector3Int.down);
-            if (ly == Chunk.Size - 1) MarkDirty(coord + Vector3Int.up);
-            if (lz == 0) MarkDirty(coord + new Vector3Int(0, 0, -1));
-            if (lz == Chunk.Size - 1) MarkDirty(coord + new Vector3Int(0, 0, 1));
+            if (lx <= 1) MarkDirty(coord + Vector3Int.left);
+            if (lx >= Chunk.Size - 2) MarkDirty(coord + Vector3Int.right);
+            if (ly <= 1) MarkDirty(coord + Vector3Int.down);
+            if (ly >= Chunk.Size - 2) MarkDirty(coord + Vector3Int.up);
+            if (lz <= 1) MarkDirty(coord + new Vector3Int(0, 0, -1));
+            if (lz >= Chunk.Size - 2) MarkDirty(coord + new Vector3Int(0, 0, 1));
         }
 
         static Vector3Int ToChunkCoord(int wx, int wy, int wz) => new(
@@ -160,11 +255,6 @@ namespace LastLight.Voxel
                 _chunks[coord] = chunk;
                 TerrainGenerator.FillChunk(chunk, worldX, worldZ);
             }
-
-            // Basamak yumusatma araziden sonra, sehirden once: sehir tesviyesi
-            // SetBlock kullaniyor ve bicimi kupe sifirliyor, yani yollar ve
-            // bina temelleri duz kaliyor.
-            TerrainGenerator.SmoothTerrain(this, worldX, worldZ);
 
             // Agaclar arazi bittikten sonra: bir agac chunk sinirini asabiliyor
             // ve o chunk henuz olusmamis olabilir.
@@ -197,9 +287,15 @@ namespace LastLight.Voxel
             }
 
             ChunkMesher.Build(chunk, this, view.Mesh);
+            SurfaceNets.Build(chunk, this, view.SmoothMesh);
 
             // Tum bloklar ayni atlasi kullaniyor: tek malzeme, tek draw call.
             view.Renderer.sharedMaterial = blockMaterial;
+            view.SmoothRenderer.sharedMaterial = terrainMaterial != null ? terrainMaterial : blockMaterial;
+
+            view.SmoothCollider.sharedMesh = null;
+            if (view.SmoothMesh.vertexCount > 0)
+                view.SmoothCollider.sharedMesh = view.SmoothMesh;
 
             // Once bosalt, yoksa Unity eski mesh'i tutuyor. Tamamen bos chunk'a
             // (hava) mesh atarsak Unity "mesh has no vertices" uyarisi veriyor

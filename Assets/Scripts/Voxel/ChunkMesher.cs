@@ -62,6 +62,12 @@ namespace LastLight.Voxel
                 // Kup disindaki bicimler ayri uretiliyor: egik yuzeylerde
                 // yuz eleme mantigi hatali bosluk uretiyor.
                 var shape = chunk.GetShape(x, y, z);
+
+                // Dogal arazi burada cizilmiyor: onu SurfaceNets yogunluk
+                // alanindan uretiyor. Ikisi de cizseydi arazi hem kup hem
+                // puruzsuz olarak ust uste gorunurdu.
+                if (shape == BlockShape.Smooth) continue;
+
                 if (shape != BlockShape.Cube)
                 {
                     ShapeMesher.AddShape(Verts, Norms, Uvs, Tris,

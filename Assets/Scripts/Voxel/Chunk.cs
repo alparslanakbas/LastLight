@@ -20,6 +20,11 @@ namespace LastLight.Voxel
         // yapiyor. Ayri dizi daha hizli ve okunakli.
         readonly BlockShape[] _shapes = new BlockShape[BlockCount];
 
+        // Yogunluk: 0 = bos, 255 = tamamen dolu, esik 128.
+        // byte yeterli - 256 kademe arazi yuzeyi icin fazlasiyla ince, float
+        // tutmak dort kat bellek ve kayit dosyasi demekti (256 chunk x 4096).
+        readonly byte[] _density = new byte[BlockCount];
+
         /// <summary>Mesh'in yeniden uretilmesi gerekiyor mu.</summary>
         public bool Dirty { get; set; } = true;
 
@@ -59,11 +64,39 @@ namespace LastLight.Voxel
         /// <summary>Kayit/yukleme icin ham bicim dizisi.</summary>
         public BlockShape[] RawShapes => _shapes;
 
+        /// <summary>Kayit/yukleme ve mesher icin ham yogunluk dizisi.</summary>
+        public byte[] RawDensity => _density;
+
+        public byte GetDensity(int x, int y, int z) =>
+            InBounds(x, y, z) ? _density[Index(x, y, z)] : (byte)0;
+
+        public void SetDensity(int x, int y, int z, byte value)
+        {
+            if (!InBounds(x, y, z)) return;
+            _density[Index(x, y, z)] = value;
+            Dirty = true;
+        }
+
+        /// <summary>
+        /// Tip ve yogunlugu birlikte yazar - arazi uretimi icin.
+        /// Set() bicimi Cube'a sifirladigi icin ayri bir yol gerekiyor.
+        /// </summary>
+        public void SetSmooth(int x, int y, int z, BlockId id, byte density)
+        {
+            if (!InBounds(x, y, z)) return;
+            int i = Index(x, y, z);
+            _blocks[i] = id;
+            _shapes[i] = BlockShape.Smooth;
+            _density[i] = density;
+            Dirty = true;
+        }
+
         /// <summary>Yuklemede tum chunk'i tek seferde yazar.</summary>
-        public void LoadRaw(BlockId[] blocks, BlockShape[] shapes)
+        public void LoadRaw(BlockId[] blocks, BlockShape[] shapes, byte[] density)
         {
             System.Array.Copy(blocks, _blocks, BlockCount);
             System.Array.Copy(shapes, _shapes, BlockCount);
+            System.Array.Copy(density, _density, BlockCount);
             Dirty = true;
         }
 

@@ -27,7 +27,11 @@ namespace LastLight.Persistence
     /// </summary>
     public static class SaveSystem
     {
-        const int FormatVersion = 1;
+        // Surum 2: yogunluk alani eklendi (puruzsuz arazi). Surum 1
+        // kayitlarinda yogunluk yok ve arazi kupsel uretilmisti; yuklemeye
+        // calismak yerine reddetmek dogru - yarim donusturulmus bir dunya
+        // hem cirkin hem hatali olurdu.
+        const int FormatVersion = 2;
         const string FileName = "lastlight.sav";
 
         public static string SavePath => Path.Combine(Application.persistentDataPath, FileName);
@@ -86,6 +90,7 @@ namespace LastLight.Persistence
                 // int yazmak dosyayi dort kat buyutur.
                 for (int i = 0; i < Chunk.BlockCount; i++) w.Write((byte)blocks[i]);
                 for (int i = 0; i < Chunk.BlockCount; i++) w.Write((byte)shapes[i]);
+                w.Write(kv.Value.RawDensity, 0, Chunk.BlockCount);
             }
         }
 
@@ -209,6 +214,7 @@ namespace LastLight.Persistence
             int count = r.ReadInt32();
             var blocks = new BlockId[Chunk.BlockCount];
             var shapes = new BlockShape[Chunk.BlockCount];
+            var density = new byte[Chunk.BlockCount];
 
             for (int c = 0; c < count; c++)
             {
@@ -216,8 +222,9 @@ namespace LastLight.Persistence
 
                 for (int i = 0; i < Chunk.BlockCount; i++) blocks[i] = (BlockId)r.ReadByte();
                 for (int i = 0; i < Chunk.BlockCount; i++) shapes[i] = (BlockShape)r.ReadByte();
+                r.Read(density, 0, Chunk.BlockCount);
 
-                world.ApplyLoadedChunk(coord, blocks, shapes);
+                world.ApplyLoadedChunk(coord, blocks, shapes, density);
             }
 
             world.RebuildDirtyChunks();

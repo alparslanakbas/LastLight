@@ -86,6 +86,45 @@ namespace ProjectBootstrap
 
         // ---------- Malzemeler ----------
 
+        /// <summary>
+        /// Puruzsuz arazinin malzemesi. Ayni atlasi kullaniyor ama uc eksenli
+        /// yansitmayla: Surface Nets kolerinin UV'si yok, kup mesher'indaki
+        /// gibi yuz basina UV atanamiyor.
+        /// </summary>
+        static Material CreateTerrainMaterial()
+        {
+            const string path = MaterialDir + "/Terrain.mat";
+
+            var shader = Shader.Find("LastLight/TerrainTriplanar");
+            if (shader == null)
+            {
+                Debug.LogError("[SceneBootstrap] TerrainTriplanar shader bulunamadi.");
+                return null;
+            }
+
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+
+            mat.SetTexture("_Atlas", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Textures/BlockAtlas.png"));
+            mat.SetTexture("_NormalAtlas", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Textures/BlockAtlasNormal.png"));
+
+            // Dunya olcegi: 0.35 => doku yaklasik 3 birimde bir tekrar ediyor.
+            // Blok basina bir tekrar (1.0) desen izgarasini geri getiriyordu -
+            // puruzsuz yuzeyin butun amaci o izgarayi yok etmekti.
+            mat.SetFloat("_Tiling", 0.35f);
+            mat.SetFloat("_Smoothness", 0.08f);
+            mat.SetFloat("_NormalScale", 1f);
+            mat.SetFloat("_BlendSharp", 6f);
+
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
         static Material CreateBlockMaterial()
         {
             if (!Directory.Exists(MaterialDir)) Directory.CreateDirectory(MaterialDir);
@@ -153,6 +192,7 @@ namespace ProjectBootstrap
             // yaziliyor; reflection ile yazmak Undo/dirty takibini bozar.
             var so = new SerializedObject(world);
             so.FindProperty("blockMaterial").objectReferenceValue = mat;
+            so.FindProperty("terrainMaterial").objectReferenceValue = CreateTerrainMaterial();
             so.ApplyModifiedPropertiesWithoutUndo();
 
             return go;

@@ -34,6 +34,20 @@ namespace LastLight.Voxel
         RampSouth = 3,   // -Z
         RampEast = 4,    // +X
         RampWest = 5,    // -X
+
+        /// <summary>
+        /// Bu voxel kup degil, YOGUNLUK ALANININ parcasi.
+        ///
+        /// Dogal arazi boyle isaretleniyor: yuzeyi kuplerin kenarlari degil,
+        /// yogunluk degerlerinin 0.5 esigini kestigi yer belirliyor. Voxel
+        /// arazinin "Minecraft" gorunmesinin asil sebebi her yukseltinin
+        /// keskin bir kup kenari olmasiydi; yogunluk alani bunu tumuyle
+        /// ortadan kaldiriyor.
+        ///
+        /// Oyuncunun koydugu bloklar Cube kaliyor - referans oyun da boyle
+        /// yapiyor: arazi puruzsuz, insa edilen yapi kupsel.
+        /// </summary>
+        Smooth = 6,
     }
 
     /// <summary>
